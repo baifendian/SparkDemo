@@ -84,7 +84,7 @@ $ spark-submit --class org.apache.spark.examples.JavaLocalFileTest \
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /etc/sysconfig/network
 ```
 
-#### 2. 读写文本文件的例子(从本地读取写入到 HDFS 上): [JavaHdfsFileTest](/src/main/java/org/apache/spark/examples/JavaHdfsFileTest.scala)
+#### 2. 读写文本文件的例子(从本地读取写入到 HDFS 上): [JavaHdfsFileTest](/src/main/java/org/apache/spark/examples/JavaHdfsFileTest.java)
 
 提交方式:
 
@@ -100,7 +100,7 @@ $ spark-submit --class org.apache.spark.examples.JavaHdfsFileTest \
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /etc/sysconfig/network /user/spark/output/network
 ```
 
-#### 3. 读写 JSON 文件的例子: [JavaJsonTest](/src/main/java/org/apache/spark/examples/JavaJsonTest.scala)
+#### 3. 读写 JSON 文件的例子: [JavaJsonTest](/src/main/java/org/apache/spark/examples/JavaJsonTest.java)
 
 
 该代码展示了如何读取一个 JSON 的示例，用到的数据是真实数据，样例如下:
@@ -125,7 +125,7 @@ $ spark-submit --class org.apache.spark.examples.JavaJsonTest \
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /user/spark/input/useraction.json /user/spark/output/result
 ```
 
-#### 4. 读取 CSV 文件的例子: [JavaParseCsvTest](/src/main/java/org/apache/spark/examples/JavaParseCsvTest.scala)
+#### 4. 读取 CSV 文件的例子: [JavaParseCsvTest](/src/main/java/org/apache/spark/examples/JavaParseCsvTest.java)
 
 CSV 文件格式也是一种比较常见的文件格式，是以 "," 分隔的文件，每一行包含了固定数目的字段，对于 CSV 文件的加载和 JSON 文件格式类似，也有很多 package 支持。
 
@@ -145,7 +145,7 @@ $ spark-submit --class org.apache.spark.examples.JavaParseCsvTest \
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /user/spark/input/useraction.csv /user/spark/output/result
 ```
 
-#### 5. 读取 SequenceFiles 文件的例子: [JavaParseSequenceFiles](/src/main/java/org/apache/spark/examples/JavaParseSequenceFiles.scala)
+#### 5. 读取 SequenceFiles 文件的例子: [JavaParseSequenceFiles](/src/main/java/org/apache/spark/examples/JavaParseSequenceFiles.java)
 
 SequenceFiles 是一种非常流行的 Hadoop format，它包含 key/value pairs，它具有同步标记用来对文件中的记录进行 "切割". 这种特性也使得 Spark 能在多个结点并行处理它。
 
@@ -164,7 +164,7 @@ $ spark-submit --class org.apache.spark.examples.JavaParseSequenceFiles \
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /user/spark/input/sample.seq
 ```
 
-### 示例 5: 使用 JDBC 接口 [JavaJdbcTest](/src/main/java/org/apache/spark/examples/JavaJdbcTest.scala)
+### 示例 5: 使用 JDBC 接口 [JavaJdbcTest](/src/main/java/org/apache/spark/examples/JavaJdbcTest.java)
 
 Spark 能够访问一些数据库，比如从关系数据库加载数据(使用 JDBC)，包括 MySQL，Postgres 等等。
 
