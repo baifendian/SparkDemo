@@ -1,5 +1,7 @@
-#### 示例 1: wordcount  的程序
-##### 代码地址为：[wordcount](/src/main/python/wordcount.py)
+## Python 程序示例
+
+### 示例 1: wordcount  的程序
+#### 代码地址为：[wordcount](/src/main/python/wordcount.py)
 技术点:
 
     (1)设置conf参数，例如:spark.default.parallelism 在shuffer中的作用
@@ -9,7 +11,6 @@
     (3)flatMap 的用法
 
     (4)reduceByKey 的用法以及shuffer的partition数目获取和partition函数的用法
-
 
 代码提交方式如下:
 
@@ -45,15 +46,14 @@ wenting.wang: 6
 dongshen.fan: 2
 ```
 
-#### 示例 2: broadcast_test  的程序
+### 示例 2: broadcast_test  的程序
 
-##### 代码地址为：[broadcast](/src/main/python/broadcast_test.py)
+#### 代码地址为：[broadcast](/src/main/python/broadcast_test.py)
 技术点:
 
     (1)--files 的使用
 
     (2)broadcast 的使用
-
 
 代码提交方式如下:
 
@@ -81,9 +81,9 @@ qifeng.dai nihao2
 qifeng.dai nihao3
 ```
 
-#### 示例 3: accumulator_test  的程序
+### 示例 3: accumulator_test  的程序
 
-##### 代码地址为：[accumulator](/src/main/python/accumulator_test.py)
+#### 代码地址为：[accumulator](/src/main/python/accumulator_test.py)
 
 技术点:
 
@@ -120,11 +120,11 @@ dafadlkfjdalfjald
 4
 ```
 
-#### 示例 4: pack  的程序
+### 示例 4: pack  的程序
 
 主要讲解python打包的用法
 
-##### 代码地址为：[pack](/src/main/python/pack/process.py)
+#### 代码地址为：[pack](/src/main/python/pack/process.py)
 
 技术点:
 
@@ -161,12 +161,13 @@ dafadlkfjdalfjald
 6
 2
 ```
-#### 示例 5. "读/写" 数据
+
+### 示例 5. "读/写" 数据
 
 Spark 支持各种数据源，包括 Local-FileSystem，HDFS，HBase，sequenceFile, Avro,JDBC databases 等
 对于avro 和 JDBC 建议通过spark-sql 来操作。
 
-##### 1. TextFile本地读取和hdfs中读取: [TextFile](/src/main/python/text_file.py)
+#### 1. TextFile本地读取和hdfs中读取: [TextFile](/src/main/python/text_file.py)
 技术点:
 
     (1) textFile本地读取 
@@ -190,7 +191,7 @@ Spark 支持各种数据源，包括 Local-FileSystem，HDFS，HBase，sequenceF
                                                text_file.py /user/baseline/input/input.txt hdfs
 ```
 
-##### 2. sequencefilehdfs中读取: [SequenceFile](/src/main/python/sequencefile.py)
+#### 2. sequencefilehdfs中读取: [SequenceFile](/src/main/python/sequencefile.py)
 技术点:
 
     (1) sequencefile 读取和写入
@@ -208,11 +209,12 @@ Spark 支持各种数据源，包括 Local-FileSystem，HDFS，HBase，sequenceF
                                                sequencefile.py /user/baseline/input/sample.seq /user/baseline/output/sequence
 
 ```
-#### 示例 6. spark-sql 操作
+
+### 示例 6. spark-sql 操作
 
 spark-sql 支持各种数据源，textfile, json, parquet, avro, mysql, hive
 
-##### 1. 读取json 文件 写 parquet文件:[parquet](/src/main/python/sql/parquet.py)
+#### 1. 读取json 文件 写 parquet文件:[parquet](/src/main/python/sql/parquet.py)
 技术点:
 
     (1) json 文件读取，加载schema
@@ -234,12 +236,11 @@ spark-sql 支持各种数据源，textfile, json, parquet, avro, mysql, hive
 Name: Justin                                  
 ```
 
-##### 2. spark-sql 的基本操作:[spark-sql](/src/main/python/sql/sql.py) 
+#### 2. spark-sql 的基本操作:[spark-sql](/src/main/python/sql/sql.py)
 技术点:
 
     (1) row 的使用
     (2) schema的默认和显示创建
-
 
 代码提交方式如下:
 ```
@@ -267,11 +268,10 @@ root
 Justin                                
 ```
 
-##### 3. mysql 的读取:[mysql-write](/src/main/python/sql/mysql_write.py) 
+#### 3. mysql 的读取:[mysql-write](/src/main/python/sql/mysql_write.py)
 技术点:
 
     (1) jdbc 写 mysql
-
 
 代码提交方式如下:
 ```
@@ -305,12 +305,10 @@ mysql> select * from people;
 3 rows in set (0.00 sec)
 ```
 
-
-##### 4. mysql 的读取:[mysql-read](/src/main/python/sql/mysql_read.py) 
+#### 4. mysql 的读取:[mysql-read](/src/main/python/sql/mysql_read.py)
 技术点:
 
     (1) jdbc 的读取 mysql
-
 
 代码提交方式如下:
 ```
@@ -339,12 +337,11 @@ Name: Andy
 Name: Justin
 ```
 
-##### 5. hive 创表和载入数据:[hive-operation](/src/main/python/sql/hive_sql.py) 
+#### 5. hive 创表和载入数据:[hive-operation](/src/main/python/sql/hive_sql.py)
 技术点:
 
     (1) hive 创表和载入数据
     (2) hive 语句中的函数调用
-
 
 代码提交方式如下:
 ```
@@ -364,9 +361,7 @@ Row(key=27, _c1=u'VAL_27')
 Row(key=165, _c1=u'VAL_165')
 ```
 
-
-
-#### 示例7. Streaming
+### 示例7. Streaming
 
 本实例主要讲解spark streaming 的Dstreams的创建,Dstreams的基本转换，Dstreams的transform
 怎么进行checkpoint容错,windows一些操作
@@ -378,7 +373,7 @@ http://mvnrepository.com/artifact/org.apache.spark/spark-streaming-kafka-assembl
 
 可以具体找spark版本对应的包
 
-##### 1. 简单的streaming操作:[network_wordcount](/src/main/python/streaming/network_wordcount.py)
+#### 1. 简单的streaming操作:[network_wordcount](/src/main/python/streaming/network_wordcount.py)
 技术点:
 
     (1) 创建StreamingContext 设置batchDuration 
@@ -412,7 +407,7 @@ streaming输出:
                                  
 ```
 
-##### 2. streaming+ spark sql操作:[sql_network_wordcount](/src/main/python/streaming/network_sql_wordcount.py)
+#### 2. streaming+ spark sql操作:[sql_network_wordcount](/src/main/python/streaming/network_sql_wordcount.py)
 技术点:
 
     (1) lazy的方式创建SQLContext
@@ -447,7 +442,7 @@ streaming输出:
                                  
 ```
 
-##### 3. 高级操作:[complex](/src/main/python/streaming/complex.py)
+#### 3. 高级操作:[complex](/src/main/python/streaming/complex.py)
 技术点:
 
     (1) lazy 的创建broadcast对象
@@ -479,7 +474,7 @@ streaming输出:
 Counts at time 2016-03-29 10:43:10 [(u'wenting', 2), (u'qifeng', 1), (u'dongshen', 1)]                           
 ```
 
-##### 4. kafka-Receiver:[kafka Receiver](/src/main/python/streaming/kafka_wordcount.py)
+#### 4. kafka-Receiver:[kafka Receiver](/src/main/python/streaming/kafka_wordcount.py)
 技术点:
 
     (1) 设置读取kafka数据的量的控制
@@ -499,8 +494,7 @@ Counts at time 2016-03-29 10:43:10 [(u'wenting', 2), (u'qifeng', 1), (u'dongshen
                                                kafka_wordcount.py  bgsbtsp0006-dqf:2181,bgsbtsp0007-dqf:2181,bgsbtsp0008-dqf:2181/kafka_0_8_2_1 wenting_spark sparkstreaming /user/baseline/kafka                       
 ```
 
-
-##### 4. kafka-Direct:[kafka Direct](/src/main/python/streaming/direct_kafka_wordcount.py)
+#### 4. kafka-Direct:[kafka Direct](/src/main/python/streaming/direct_kafka_wordcount.py)
 技术点:
     (1) 设置读取kafka数据的量的控制
     (2) checkpoint 自动保存偏移量
@@ -517,6 +511,6 @@ Counts at time 2016-03-29 10:43:10 [(u'wenting', 2), (u'qifeng', 1), (u'dongshen
                                                --jars spark-streaming-kafka-assembly_2.10-1.6.0.jar \
                                                direct_kafka_wordcount.py 172.18.1.22:9092,172.18.1.23:9092,172.18.1.24:9092 wenting_spark
 ```
-#### 示例8. MLLib
+
+### 示例8. MLLib
 示例说明见[MLLib demo](/src/main/python/mllib)
-#### 示例9. GraphX
