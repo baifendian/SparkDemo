@@ -96,7 +96,7 @@
 		<CodeCacheSize>512m</CodeCacheSize>
 	</properties>
 
-	<dependencies>
+    <dependencies>
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-core_${scala.binary.version}</artifactId>
@@ -420,6 +420,12 @@
 			<version>1.2.7</version>
 		</dependency>
 
+        <dependency>
+            <groupId>com.github.fommil.netlib</groupId>
+            <artifactId>all</artifactId>
+            <version>1.1.2</version>
+            <type>pom</type>
+        </dependency>
 
 		<!-- The following dependencies are already present in the Spark assembly, so we want to force them to be provided. -->
 		<dependency>

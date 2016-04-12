@@ -669,8 +669,99 @@ hello world
 
 ### 示例10. MLLib
 
+MLlib 是 Spark 的机器学习库，主要包括一些学习算法，如：分类，回归，聚类，协同过滤，维度消减，一些相对 lower-level 的优化功能，以及 higher-level 的 pipeline APIs。
+
+它包括两个 packages:
+
+spark.mllib: 基于 RDDs 的原生的 API；
+spark.ml: 提供了 higher-level API，基于 DataFrames，用于构造 ML pipelines。
+
+这里的示例主要也是分 spark.ml 和 spark.mllib 进行介绍。
+
+spark.ml 的相关示例：
+
+#### 1 逻辑回归的例子: [LogisticRegExample](/src/main/scala/org/apache/spark/examples/ml/LogisticRegExample.scala)
+
+该示例主要展示了 Estimator, Transformer, Param 的概念和用法，是一个最基本的应用 spark 构建机器学习样例的例子。
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.LogisticRegExample \
+                                        --master yarn \
+                                        --deploy-mode cluster \
+                                        --driver-cores 1 \
+                                        --driver-memory 1024M \
+                                        --num-executors 4 \
+                                        --executor-cores 2 \
+                                        --executor-memory 4096M \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
+```
+
+#### 2 Pipeline 的例子: [PipelineExample](/src/main/scala/org/apache/spark/examples/ml/PipelineExample.scala)
+
+该示例展示了简单的 Pipeline 过程，涉及到一个 pipeline 构建过程，模型的保存和加载。
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.PipelineExample \
+                                        --master yarn \
+                                        --deploy-mode cluster \
+                                        --driver-cores 1 \
+                                        --driver-memory 1024M \
+                                        --num-executors 4 \
+                                        --executor-cores 2 \
+                                        --executor-memory 4096M \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
+```
+
+#### 3 交叉验证的例子: [CrossValidationExample](/src/main/scala/org/apache/spark/examples/ml/CrossValidationExample.scala)
+
+该示例展示了一个交叉验证来选择最优模型的例子。
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.CrossValidationExample \
+                                        --master yarn \
+                                        --deploy-mode cluster \
+                                        --driver-cores 1 \
+                                        --driver-memory 1024M \
+                                        --num-executors 1 \
+                                        --executor-cores 2 \
+                                        --executor-memory 4096M \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
+```
+
+注，之前配置的 --num-executors 为 4，可能随机性引起一些问题，见 [ArrayIndexOutOfBoundsException](https://mail-archives.apache.org/mod_mbox/incubator-spark-user/201601.mbox/%3CCALo9x1QLNQXfHiV6+tOK+d3n=iPpuOgNet6QEmv4txb+W-okRA@mail.gmail.com%3E)
+
+#### 4 训练集切分验证的例子: [ValidationSplitExample](/src/main/scala/org/apache/spark/examples/ml/ValidationSplitExample.scala)
+
+该示例也是一个通过验证选择最佳模型的例子，不同之处是没有使用交叉验证的方式，而是将数据集一次性按照比例切分为训练集和测试集，能够节省测试时间。
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ hadoop fs -put sample_linear_regression_data.txt /user/qifeng.dai/input
+
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.ValidationSplitExample \
+                                        --master yarn \
+                                        --deploy-mode cluster \
+                                        --driver-cores 1 \
+                                        --driver-memory 1024M \
+                                        --num-executors 1 \
+                                        --executor-cores 2 \
+                                        --executor-memory 4096M \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /user/qifeng.dai/input/sample_linear_regression_data.txt
+```
+
+注：输入的文件格式要符合 libsvm 的格式需求，另外就是第一行数字要是 double 类型的。
+
+#### 5
 
 
+spark.mllib 的相关示例：
 
 
 ### 示例11. GraphX
