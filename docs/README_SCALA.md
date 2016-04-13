@@ -944,8 +944,6 @@ List(Logistic regression models, regression models are, models are neat)
 #### 16
 
 
-=== Classification and regression ===
-
 #### 17
 
 
@@ -984,6 +982,7 @@ List(Logistic regression models, regression models are, models are neat)
 
 #### 29
 
+=== Classification and regression ===
 
 #### 30
 
@@ -1006,9 +1005,6 @@ List(Logistic regression models, regression models are, models are neat)
 #### 36
 
 
-
-=== Clustering ===
-
 #### 37
 
 
@@ -1019,6 +1015,101 @@ List(Logistic regression models, regression models are, models are neat)
 
 
 #### 40
+
+
+#### 41
+
+
+#### 42
+
+
+#### 43
+
+
+#### 44
+
+
+=== Clustering ===
+
+#### 45 KMeans 聚类示例: [KMeansExample](/src/main/scala/org/apache/spark/examples/ml/KMeansExample.scala)
+
+k-means 是一种最常用的聚类算法，将数据聚类到指定数目的簇中，MLLib 实现的称之为 kmeans。
+
+kmenas 实现为 Estimator，会生成一个 KMeansModel 作为基础模型。
+
+输入字段：
+
+Param name	| Type(s)	| Default	| Description
+------------ | ------------- | ------------- | -------------
+featuresCol	|Vector	|"features"	| Feature vector
+
+输出字段：
+
+Param name	| Type(s)	| Default	| Description
+------------ | ------------- | ------------- | -------------
+predictionCol	| Int	| "prediction"	| Predicted cluster center
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.KMeansExample \
+                                        --master yarn \
+                                        --deploy-mode cluster \
+                                        --driver-cores 1 \
+                                        --driver-memory 1024M \
+                                        --num-executors 1 \
+                                        --executor-cores 2 \
+                                        --executor-memory 4096M \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
+
+# 结果如下：
+Final Centers:
+[0.1,0.1,0.1]
+[9.1,9.1,9.1]
+Show cluster results:
++---+-------------+----------+
+| id|     features|prediction|
++---+-------------+----------+
+|  1|[0.0,0.0,0.0]|         0|
+|  2|[0.1,0.1,0.1]|         0|
+|  3|[0.2,0.2,0.2]|         0|
+|  4|[9.0,9.0,9.0]|         1|
+|  5|[9.1,9.1,9.1]|         1|
+|  6|[9.2,9.2,9.2]|         1|
++---+-------------+----------+
+```
+
+#### 46 LDA 示例: [LDAExample](/src/main/scala/org/apache/spark/examples/ml/LDAExample.scala)
+
+LDA 实现为一个 Estimator，支持 EMLDAOptimizer， OnlineLDAOptimizer，且生成了一个 LDAModel 作为基本模型。
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ hadoop fs -put sample_lda_data.txt /user/qifeng.dai/input
+
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.LDAExample \
+                                        --master yarn \
+                                        --deploy-mode cluster \
+                                        --driver-cores 1 \
+                                        --driver-memory 1024M \
+                                        --num-executors 1 \
+                                        --executor-cores 2 \
+                                        --executor-memory 4096M \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /user/qifeng.dai/input/sample_lda_data.txt
+
+# 结果如下：
+
+```
+
+#### 47
+
+
+#### 48
+
+
+#### 49
+
+
+#### 50
 
 
 ### 示例11. GraphX
