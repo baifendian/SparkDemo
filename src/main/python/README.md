@@ -480,6 +480,7 @@ Counts at time 2016-03-29 10:43:10 [(u'wenting', 2), (u'qifeng', 1), (u'dongshen
     (1) 设置读取kafka数据的量的控制
     (2) 设置kafka读取的偏移量为smallest
     (3) 读取的数据写入kafka中
+    (4) 日志回滚设置
 
 代码提交方式如下:
 
@@ -491,6 +492,9 @@ Counts at time 2016-03-29 10:43:10 [(u'wenting', 2), (u'qifeng', 1), (u'dongshen
                                                --executor-cores 2 \
                                                --executor-memory 4G \
                                                --jars spark-streaming-kafka-assembly_2.10-1.6.0.jar \
+                                               --files log4j-spark.properties \
+                                               --conf spark.executor.extraJavaOptions=-Dlog4j.configuration=log4j-spark.properties \
+                                               --conf spark.driver.extraJavaOptions=-Dlog4j.configuration=log4j-spark.properties \
                                                kafka_wordcount.py  bgsbtsp0006-dqf:2181,bgsbtsp0007-dqf:2181,bgsbtsp0008-dqf:2181/kafka_0_8_2_1 wenting_spark sparkstreaming /user/baseline/kafka                       
 ```
 
