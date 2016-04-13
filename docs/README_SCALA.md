@@ -803,7 +803,7 @@ Word2Vec 是一个 Estimator，接受一系列的 words（对 documents 的表�
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
 ```
 
-#### 7 CountVectorizer 例子: [CountVectorizerExample)(/src/main/scala/org/apache/spark/examples/ml/CountVectorizerExample.scala)
+#### 7 CountVectorizer 例子: [CountVectorizerExample](/src/main/scala/org/apache/spark/examples/ml/CountVectorizerExample.scala)
 
 CountVectorizer 和 CountVectorizerModel 的目标是将 text 文档集合转化为 token counts 的向量，当没有先验词典，CountVectorizer 当做 estimator 来使用，训练出 CountVectorizerModel，在拟合的过程中，CountVectorizer 会选择 top 的几个 words。可选参数 "minDF" 设置了单个 term 需要在多少个文档中出现的下限制（如果是 <1.0 则为比例）。
 
@@ -832,7 +832,7 @@ CountVectorizer 和 CountVectorizerModel 的目标是将 text 文档集合转化
 +--------------------+
 ```
 
-#### 8 Tokenizer 的例子，即分词示例: [TokenizerExample)(/src/main/scala/org/apache/spark/examples/ml/TokenizerExample.scala)
+#### 8 Tokenizer 的例子，即分词示例: [TokenizerExample](/src/main/scala/org/apache/spark/examples/ml/TokenizerExample.scala)
 
 spark ml 提供了 2 种分词，一种是：Tokenization，另外一种是 RegexTokenizer。
 
@@ -921,7 +921,9 @@ n-gram 是指连续的 n 个 tokens（通常指的是 words），NGram 类用于
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
 
 # 结果如下
-
+List(Hi I heard, I heard about, heard about Spark)
+List(I wish Java, wish Java could, Java could use, could use case, use case classes)
+List(Logistic regression models, regression models are, models are neat)
 ```
 
 #### 11
