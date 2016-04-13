@@ -680,6 +680,8 @@ spark.ml: 提供了 higher-level API，基于 DataFrames，用于构造 ML pipel
 
 spark.ml 的相关示例：
 
+=== Overview: estimators, transformers and pipelines ===
+
 #### 1 逻辑回归的例子: [LogisticRegExample](/src/main/scala/org/apache/spark/examples/ml/LogisticRegExample.scala)
 
 该示例主要展示了 Estimator, Transformer, Param 的概念和用法，是一个最基本的应用 spark 构建机器学习样例的例子。
@@ -758,23 +760,169 @@ spark.ml 的相关示例：
 
 注：输入的文件格式要符合 libsvm 的格式需求，另外就是第一行数字要是 double 类型的。
 
-#### 5
+=== Extracting, transforming and selecting features ===
 
+#### 5 TfIdf 例子: [TfIdfExample](/src/main/scala/org/apache/spark/examples/ml/TfIdfExample.scala)
 
-#### 6
+TF-IDF 是一种通用的文本处理过程，它分为 TF 和 IDF 两个过程。相关资料请查阅：[tf-idf](https://en.wikipedia.org/wiki/Tf%E2%80%93idf)
 
+TF 是采用 HashingTF（一种 Transformer）来进行处理，可以得到固定长度的 feature vectors，具体是对每个 word 进行 hash，每个 hash 值对应一个特征（可以设置特征数，hash 值会进行映射）；
+IDF 是一种 Estimator，它 fits 一个 dataset，生成一个 IDFModel，这个 IDFModel 接受 feature vectors，然后得到一个扩展的 feature vectors。
 
-#### 7
+代码提交方式如下：
 
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.TfIdfExample \
+                                        --master yarn \
+                                        --deploy-mode cluster \
+                                        --driver-cores 1 \
+                                        --driver-memory 1024M \
+                                        --num-executors 1 \
+                                        --executor-cores 2 \
+                                        --executor-memory 4096M \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
+```
 
-#### 8
+#### 6 Word2Vec 例子: [Word2VecExample](/src/main/scala/org/apache/spark/examples/ml/Word2VecExample.scala)
 
+word2vec 模型在文本分析中占有重要地位，具体的资料可以参加：[wiki-word2vec](https://en.wikipedia.org/wiki/Word2vec), 以及 [project-word2vec](http://deeplearning4j.org/word2vec)
 
-#### 9
+Word2Vec 是一个 Estimator，接受一系列的 words（对 documents 的表示），然后训练出一个 Word2VecModel 模型，这个模型对每个 document 会生成一个 vector。然后这个 vector 能被当做特征用于各种 prediction。
 
+代码提交方式如下：
 
-#### 10
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.Word2VecExample \
+                                        --master yarn \
+                                        --deploy-mode cluster \
+                                        --driver-cores 1 \
+                                        --driver-memory 1024M \
+                                        --num-executors 1 \
+                                        --executor-cores 2 \
+                                        --executor-memory 4096M \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
+```
 
+#### 7 CountVectorizer 例子: [CountVectorizerExample)(/src/main/scala/org/apache/spark/examples/ml/CountVectorizerExample.scala)
+
+CountVectorizer 和 CountVectorizerModel 的目标是将 text 文档集合转化为 token counts 的向量，当没有先验词典，CountVectorizer 当做 estimator 来使用，训练出 CountVectorizerModel，在拟合的过程中，CountVectorizer 会选择 top 的几个 words。可选参数 "minDF" 设置了单个 term 需要在多少个文档中出现的下限制（如果是 <1.0 则为比例）。
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.CountVectorizerExample \
+                                        --master yarn \
+                                        --deploy-mode cluster \
+                                        --driver-cores 1 \
+                                        --driver-memory 1024M \
+                                        --num-executors 1 \
+                                        --executor-cores 2 \
+                                        --executor-memory 4096M \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
+
+# 结果如下
++--------------------+
+|            features|
++--------------------+
+|(3,[0,1,2],[1.0,1...|
+|(3,[0,1,2],[2.0,2...|
+|       (3,[0],[1.0])|
+|       (3,[2],[1.0])|
+|           (3,[],[])|
++--------------------+
+```
+
+#### 8 Tokenizer 的例子，即分词示例: [TokenizerExample)(/src/main/scala/org/apache/spark/examples/ml/TokenizerExample.scala)
+
+spark ml 提供了 2 种分词，一种是：Tokenization，另外一种是 RegexTokenizer。
+
+Tokenization 接受一个 text（比如 sentence），然后将其切分为单个的 terms（通常是 words）。
+
+RegexTokenizer 允许更加高级的分词，就是采用正则表达式来完成的。
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.TokenizerExample \
+                                        --master yarn \
+                                        --deploy-mode cluster \
+                                        --driver-cores 1 \
+                                        --driver-memory 1024M \
+                                        --num-executors 1 \
+                                        --executor-cores 2 \
+                                        --executor-memory 4096M \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
+
+# 结果如下
+result of tokenizer...
+[WrappedArray(hi, i, heard, about, spark),0]
+[WrappedArray(i, wish, java, could, use, case, classes),1]
+[WrappedArray(logistic,regression,models,are,neat),2]
+result of regex tokenizer...
+[WrappedArray(hi, i, heard, about, spark),0]
+[WrappedArray(i, wish, java, could, use, case, classes),1]
+[WrappedArray(logistic, regression, models, are, neat),2]
+```
+
+#### 9 停用词的例子，会删除停用词: [StopWordsRemoverExample](/src/main/scala/org/apache/spark/examples/ml/StopWordsRemoverExample.scala)
+
+停用词指的是应该从 input 中删除的单词，StopWordsRemover 接受 strings 序列，然后从输入中删除停用词。
+
+stopwords 列表由 stopWords 参数指定，默认提供的 stopwords 可以通过 getStopWords 来获取，boolean 参数 caseSensitive 指定是否是大小写敏感的。
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.StopWordsRemoverExample \
+                                        --master yarn \
+                                        --deploy-mode cluster \
+                                        --driver-cores 1 \
+                                        --driver-memory 1024M \
+                                        --num-executors 1 \
+                                        --executor-cores 2 \
+                                        --executor-memory 4096M \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
+
+# 结果如下
+stop words remove
++---+--------------------+--------------------+
+| id|                 raw|            filtered|
++---+--------------------+--------------------+
+|  0|[I, saw, the, red...|  [saw, red, baloon]|
+|  1|[Mary, had, a, li...|[Mary, little, lamb]|
++---+--------------------+--------------------+
+
+stop words remove after add some words
++---+--------------------+--------------------+
+| id|                 raw|            filtered|
++---+--------------------+--------------------+
+|  0|[I, saw, the, red...|       [saw, baloon]|
+|  1|[Mary, had, a, li...|[Mary, little, lamb]|
++---+--------------------+--------------------+
+```
+
+#### 10 n-gram 示例: [NGramExample](/src/main/scala/org/apache/spark/examples/ml/NGramExample.scala)
+
+n-gram 是指连续的 n 个 tokens（通常指的是 words），NGram 类用于将输入 features 转化为 n-grams。
+
+参数 n 用于确定 terms 的次数（在每个 n-gram 里面）。输出包含的是一系列的 n-grams。如果我们的输入 sequence 包含的单词小于 n 个 strings，则不会有输出。
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.NGramExample \
+                                        --master yarn \
+                                        --deploy-mode cluster \
+                                        --driver-cores 1 \
+                                        --driver-memory 1024M \
+                                        --num-executors 1 \
+                                        --executor-cores 2 \
+                                        --executor-memory 4096M \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
+
+# 结果如下
+
+```
 
 #### 11
 
@@ -793,6 +941,8 @@ spark.ml 的相关示例：
 
 #### 16
 
+
+=== Classification and regression ===
 
 #### 17
 
@@ -853,6 +1003,9 @@ spark.ml 的相关示例：
 
 #### 36
 
+
+
+=== Clustering ===
 
 #### 37
 
