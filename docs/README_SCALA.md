@@ -1115,18 +1115,6 @@ LDA 实现为一个 Estimator，支持 EMLDAOptimizer， OnlineLDAOptimizer，�
 +---------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
 
-#### 47
-
-
-#### 48
-
-
-#### 49
-
-
-#### 50
-
-
 ### 示例11. GraphX
 
 图是一个比较宽泛的主题，关于图以及相关的应用，用户可以参考一些资料，包括 Danai Koutra 教授的 "Node and Graph Similarity: Theory and Applications", Google 的论文 [Pregel](https://www.google.com.sg/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&ved=0ahUKEwj-y7Cok8TLAhVLmJQKHe9vDpgQFggdMAA&url=https%3A%2F%2Fkowshik.github.io%2FJPregel%2Fpregel_paper.pdf&usg=AFQjCNFhxY3UjAhPdZIEk51P6ACPOormtA) 等都是非常经典的文献 。
