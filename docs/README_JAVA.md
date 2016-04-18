@@ -201,6 +201,126 @@ $ spark-submit --class org.apache.spark.examples.sql.JavaSparkSQL \
 
 ### 示例7. Streaming
 
+#### 1 Kafka 单词计数 [JavaKafkaWordCount](/src/main/java/org/apache/spark/examples/streaming/JavaKafkaWordCount.java)
+
+这个例子主要讲解了读取 Kafka 中的数据，然后进行单词计算统计的过程，其中直接通过命令行向 kafka 中写入数据。
+
+首先启动发送单词的命令行：
+
+```
+$ ./kafka-console-producer.sh --broker-list 172.18.1.22:9092,172.18.1.23:9092,172.18.1.24:9092 --topic topic1
+```
+
+然后我们启动 JavaKafkaWordCount 用来统计一下单词的个数情况：
+
+```
+$ spark-submit --class org.apache.spark.examples.streaming.JavaKafkaWordCount \
+                                        --master yarn \
+                                        --deploy-mode client \
+                                        --driver-cores 1 \
+                                        --driver-memory 1024M \
+                                        --num-executors 4 \
+                                        --executor-cores 2 \
+                                        --executor-memory 4096M \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar 172.18.1.22:2181,172.18.1.23:2181,172.18.1.24:2181/kafka_0_8_2_1 my-consumer-group1 topic1 2
+```
+
+#### 2 Kafka 单词计数-Direct 接口版本 [JavaDirectKafkaWordCount](/src/main/java/org/apache/spark/examples/streaming/JavaDirectKafkaWordCount.java)
+
+首先启动发送单词的命令行：
+
+```
+$ ./kafka-console-producer.sh --broker-list 172.18.1.22:9092,172.18.1.23:9092,172.18.1.24:9092 --topic topic2
+```
+
+然后启动统计程序：
+
+```
+$ spark-submit --class org.apache.spark.examples.streaming.JavaDirectKafkaWordCount \
+                                        --master yarn \
+                                        --deploy-mode client \
+                                        --driver-cores 1 \
+                                        --driver-memory 1024M \
+                                        --num-executors 4 \
+                                        --executor-cores 2 \
+                                        --executor-memory 4096M \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar 172.18.1.22:9092,172.18.1.23:9092,172.18.1.24:9092 topic2
+```
+
+#### 3 网络发送单词的计数问题 [JavaNetworkWordCount](/src/main/java/org/apache/spark/examples/streaming/JavaNetworkWordCount.java)
+
+启动网络端口，并且往里面发送数据：
+
+```
+$ nc -lk 9999
+
+hello world
+...
+```
+
+启动网络计数的程序：
+
+```
+$ spark-submit --class org.apache.spark.examples.streaming.JavaNetworkWordCount \
+                                        --master yarn \
+                                        --deploy-mode client \
+                                        --driver-cores 1 \
+                                        --driver-memory 1024M \
+                                        --num-executors 4 \
+                                        --executor-cores 2 \
+                                        --executor-memory 4096M \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar 172.18.1.22 9999
+```
+
+#### 4 网络发送单词的计数问题-CheckPoint版本 [JavaRecoverableNetworkWordCount](/src/main/java/org/apache/spark/examples/streaming/JavaRecoverableNetworkWordCount.java)
+
+启动网络端口，并且往里面发送数据：
+
+```
+$ nc -lk 9999
+
+hello world
+...
+```
+
+启动网络计数的程序，这个程序会统计单词的个数，并且将计数信息写到 Redis 中：
+
+```
+$ spark-submit --class org.apache.spark.examples.streaming.JavaRecoverableNetworkWordCount \
+                                        --master yarn \
+                                        --deploy-mode client \
+                                        --driver-cores 1 \
+                                        --driver-memory 1024M \
+                                        --num-executors 4 \
+                                        --executor-cores 2 \
+                                        --executor-memory 4096M \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar 172.18.1.22 9999 /user/spark/checkpoint 172.18.1.22 6379
+```
+
+#### 5 网络发送单词的计数问题-SQL版本 [JavaSqlNetworkWordCount](/src/main/java/org/apache/spark/examples/streaming/JavaSqlNetworkWordCount.java)
+
+启动网络端口，并且往里面发送数据：
+
+```
+$ nc -lk 9999
+
+hello world
+...
+```
+
+启动网络计数的程序，通过 SQL 统计单词个数：
+
+```
+$ spark-submit --class org.apache.spark.examples.streaming.JavaSqlNetworkWordCount \
+                                        --master yarn \
+                                        --deploy-mode client \
+                                        --driver-cores 1 \
+                                        --driver-memory 1024M \
+                                        --num-executors 4 \
+                                        --executor-cores 2 \
+                                        --executor-memory 4096M \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar 172.18.1.22 9999
+```
 
 
 
