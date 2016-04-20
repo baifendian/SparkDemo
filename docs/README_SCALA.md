@@ -174,9 +174,10 @@ Object files | Yes | 依赖于 Java Serialization，如果 classes 修改，会�
 提交方式:
 
 ```
+# 注意 driver 所在 node 需要有本地文件 “/home/qifeng.dai/sparkbook/story.txt”
 [qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.HdfsFileTest \
                                         --master yarn \
-                                        --deploy-mode cluster \
+                                        --deploy-mode client \
                                         --driver-cores 1 \
                                         --driver-memory 512M \
                                         --num-executors 2 \
@@ -926,41 +927,92 @@ List(I wish Java, wish Java could, Java could use, could use case, use case clas
 List(Logistic regression models, regression models are, models are neat)
 ```
 
-#### 11
+#### 11 Binarizer 示例: [BinarizerExample](/src/main/scala/org/apache/spark/examples/ml/BinarizerExample.scala)
+
+Binarization 是对数值类型进行处理，处理为二进制的 (0/1) features.
+
+Binarizer 接受参数 inputCol 和 outputCol，以及一个 threshold 用于做 binarization。大于这个 threshold 的映射为 1.0，小于这个值的映射为 0.0。
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.BinarizerExample \
+                                       --master yarn \
+                                       --deploy-mode cluster \
+                                       --driver-cores 1 \
+                                       --driver-memory 1024M \
+                                       --num-executors 1 \
+                                       --executor-cores 2 \
+                                       --executor-memory 4096M \
+                                       spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar 0.5
+
+# 结果如下
+[0.0]
+[1.0]
+[0.0]
+```
+
+#### 12 pca 示例: [PCAExample](/src/main/scala/org/apache/spark/examples/ml/PCAExample.scala)
+
+PCA(Principal Component Analysis)是对高维数据进行降维，并且去除噪声的一种数据处理方式，更多资料参考见：[wiki](https://en.wikipedia.org/wiki/Principal_component_analysis)
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.PCAExample \
+                                       --master yarn \
+                                       --deploy-mode cluster \
+                                       --driver-cores 1 \
+                                       --driver-memory 1024M \
+                                       --num-executors 1 \
+                                       --executor-cores 2 \
+                                       --executor-memory 4096M \
+                                       spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar 0.5
+
+# 结果如下
++--------------------+
+|         pcaFeatures|
++--------------------+
+|[1.64857282308838...|
+|[-4.6451043317815...|
+|[-6.4288805356764...|
++--------------------+
+```
+
+#### 13 字符串编码示例: [StringIndexerExample](/src/main/scala/org/apache/spark/examples/ml/StringIndexerExample.scala)
+
+StringIndexer 对 string column 进行编码，编码为 label indices，具体的 indices 是 [0, numLabels)，根据 label 的频次有序排列。
 
 
-#### 12
+
+#### 14 IndexToString
 
 
-#### 13
+#### 15 VectorIndexer
 
 
-#### 14
+#### 16 Normalizer
 
 
-#### 15
+#### 17 StandardScaler
 
 
-#### 16
+#### 18 MinMaxScaler
 
 
-#### 17
+#### 19 SQLTransformer
 
 
-#### 18
+#### 20 VectorSlicer
 
 
-#### 19
+#### 21 RFormula
 
 
-#### 20
+#### 22 ChiSqSelector
 
 
-#### 21
-
-
-#### 22
-
+=== Classification ===
 
 #### 23
 
@@ -979,10 +1031,10 @@ List(Logistic regression models, regression models are, models are neat)
 
 #### 28
 
+=== Regression ===
 
 #### 29
 
-=== Classification and regression ===
 
 #### 30
 
@@ -995,39 +1047,19 @@ List(Logistic regression models, regression models are, models are neat)
 
 #### 33
 
+=== Decision trees ===
 
 #### 34
 
 
 #### 35
 
+=== Tree Ensembles ===
 
 #### 36
 
 
 #### 37
-
-
-#### 38
-
-
-#### 39
-
-
-#### 40
-
-
-#### 41
-
-
-#### 42
-
-
-#### 43
-
-
-#### 44
-
 
 === Clustering ===
 
