@@ -761,7 +761,7 @@ spark.ml 的相关示例：
 
 注：输入的文件格式要符合 libsvm 的格式需求，另外就是第一行数字要是 double 类型的。
 
-=== Extracting, transforming and selecting features ===
+=== Extracting, transforming and selecting features(Extracting) ===
 
 #### 5 TfIdf 例子: [TfIdfExample](/src/main/scala/org/apache/spark/examples/ml/TfIdfExample.scala)
 
@@ -832,6 +832,8 @@ CountVectorizer 和 CountVectorizerModel 的目标是将 text 文档集合转化
 |           (3,[],[])|
 +--------------------+
 ```
+
+=== Extracting, transforming and selecting features(transforming) ===
 
 #### 8 Tokenizer 的例子，即分词示例: [TokenizerExample](/src/main/scala/org/apache/spark/examples/ml/TokenizerExample.scala)
 
@@ -1186,22 +1188,124 @@ only showing top 20 rows
 only showing top 20 rows
 ```
 
-#### 17 StandardScaler
+#### 17 向量 "相乘" 的示例 [ElementwiseProductExample](/src/main/scala/org/apache/spark/examples/ml/ElementwiseProductExample.scala)
+
+对每个输入的向量，需要乘上一个 "weight" 向量，这个乘法也是相当的简单，计算规则见：[Hadamard product](https://en.wikipedia.org/wiki/Hadamard_product_%28matrices%29)
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.ElementwiseProductExample \
+                                       --master yarn \
+                                       --deploy-mode cluster \
+                                       --driver-cores 1 \
+                                       --driver-memory 1024M \
+                                       --num-executors 1 \
+                                       --executor-cores 2 \
+                                       --executor-memory 4096M \
+                                       spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
+
+# 结果如下
++---+-------------+-----------------+
+| id|       vector|transformedVector|
++---+-------------+-----------------+
+|  a|[1.0,2.0,3.0]|    [0.0,2.0,6.0]|
+|  b|[4.0,5.0,6.0]|   [0.0,5.0,12.0]|
++---+-------------+-----------------+
+```
+
+#### 18 SQL 语句进行转换的示例: [SQLTransformerExample](/src/main/scala/org/apache/spark/examples/ml/SQLTransformerExample.scala)
+
+支持通过写 SQL 语句来完成 transformations，这个确实很强大，不过只支持一些简单的语法，如 "SELECT ... FROM __THIS__ ...". __THIS__ 表示输入 dataset 的名称。
+
+select 语句设置了具体的输出，包括 fields，常量，表达式，比如有：
+
+1. SELECT a, a + b AS a_b FROM __THIS__
+2. SELECT a, SQRT(b) AS b_sqrt FROM __THIS__ where a > 5
+3. SELECT a, b, SUM(c) AS c_sum FROM __THIS__ GROUP BY a, b
+
+假设我们的数据是：
+
+ id |  v1 |  v2
+----|-----|-----
+ 0  | 1.0 | 3.0
+ 2  | 2.0 | 5.0
+
+我们的语句是 "SELECT *, (v1 + v2) AS v3, (v1 * v2) AS v4 FROM __THIS__", 那么结果是：
+
+ id |  v1 |  v2 |  v3 |  v4
+----|-----|-----|-----|-----
+ 0  | 1.0 | 3.0 | 4.0 | 3.0
+ 2  | 2.0 | 5.0 | 7.0 |10.0
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.SQLTransformerExample \
+                                       --master yarn \
+                                       --deploy-mode cluster \
+                                       --driver-cores 1 \
+                                       --driver-memory 1024M \
+                                       --num-executors 1 \
+                                       --executor-cores 2 \
+                                       --executor-memory 4096M \
+                                       spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
+
+# 结果如下
++---+---+---+---+----+
+| id| v1| v2| v3|  v4|
++---+---+---+---+----+
+|  0|1.0|3.0|4.0| 3.0|
+|  2|2.0|5.0|7.0|10.0|
++---+---+---+---+----+
+```
+
+#### 19 向量的合并操作 [VectorAssemblerExample](/src/main/scala/org/apache/spark/examples/ml/VectorAssembler.scala)
+
+向量合并的工作是需要将给定的 column list 合并为一个唯一的 vector column，一般用于将 raw features 和由其它 transformers 转化的 features 进行合并，得到一个单个的 feature vector。
+
+一般为了训练 ML models(比如 logistic regression 和 decision tree)是需要做这个事情的。VectorAssembler 接受的 column types 包括 numeric types，boolean type，vector type 等等。
+
+在每一行，input columns 的值会进行连接(根据特定顺序).
+
+比如对于下面的 DataFrame:
+
+ id | hour | mobile | userFeatures     | clicked
+----|------|--------|------------------|---------
+ 0  | 18   | 1.0    | [0.0, 10.0, 0.5] | 1.0
+
+希望将 hour, mobile 和 userFeatures 进行结合得到一个 feature vector，转化后会得到：
+
+ id | hour | mobile | userFeatures     | clicked | features
+----|------|--------|------------------|---------|-----------------------------
+ 0  | 18   | 1.0    | [0.0, 10.0, 0.5] | 1.0     | [18.0, 1.0, 0.0, 10.0, 0.5]
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.VectorAssemblerExample \
+                                       --master yarn \
+                                       --deploy-mode cluster \
+                                       --driver-cores 1 \
+                                       --driver-memory 1024M \
+                                       --num-executors 1 \
+                                       --executor-cores 2 \
+                                       --executor-memory 4096M \
+                                       spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
+
+# 结果如下
+[[18.0,1.0,0.0,10.0,0.5],1.0]
+```
+
+=== Extracting, transforming and selecting features(selecting features) ===
+
+#### 20 [VectorSlicerExample](/src/main/scala/org/apache/spark/examples/ml/VectorSlicerExample.scala)
 
 
-#### 18 MinMaxScaler
+#### 21 [RFormulaExample](/src/main/scala/org/apache/spark/examples/ml/RFormulaExample.scala)
 
 
-#### 19 SQLTransformer
-
-
-#### 20 VectorSlicer
-
-
-#### 21 RFormula
-
-
-#### 22 ChiSqSelector
+#### 22 [ChiSqSelectorExample](/src/main/scala/org/apache/spark/examples/ml/ChiSqSelectorExample.scala)
 
 
 === Classification ===
