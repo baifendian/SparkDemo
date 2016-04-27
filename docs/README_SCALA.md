@@ -1299,16 +1299,74 @@ select 语句设置了具体的输出，包括 fields，常量，表达式，比
 
 === Extracting, transforming and selecting features(selecting features) ===
 
-#### 20 [VectorSlicerExample](/src/main/scala/org/apache/spark/examples/ml/VectorSlicerExample.scala)
+#### 20 向量切片转换器示例: [VectorSlicerExample](/src/main/scala/org/apache/spark/examples/ml/VectorSlicerExample.scala)
 
+VectorSlicer 是一个 transformer，它接受一个 feature vector，输出的是一个新的 feature vector，它具备原始 features 的 sub-array。一般用于从 vector column 中抽取特征。
 
-#### 21 [RFormulaExample](/src/main/scala/org/apache/spark/examples/ml/RFormulaExample.scala)
+代码提交方式如下：
 
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.VectorSlicerExample \
+                                       --master yarn \
+                                       --deploy-mode cluster \
+                                       --driver-cores 1 \
+                                       --driver-memory 1024M \
+                                       --num-executors 1 \
+                                       --executor-cores 2 \
+                                       --executor-memory 4096M \
+                                       spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
 
-#### 22 [ChiSqSelectorExample](/src/main/scala/org/apache/spark/examples/ml/ChiSqSelectorExample.scala)
+# 结果如下
+[[-2.0,2.3,0.0],[2.3,0.0]]
+```
 
+#### 21 卡方分布获取特征示例: [ChiSqSelectorExample](/src/main/scala/org/apache/spark/examples/ml/ChiSqSelectorExample.scala)
+
+根据 [Chi-Squared](https://en.wikipedia.org/wiki/Chi-squared) 的方式来选取特征，首先会根据 Chi-Squared test 来对 features 进行排序（其实会检验 features 和 label 之间的独立性），然后过滤选出最靠前的几个特征，最终得出的 features 是最有预测能力的。
+
+比如我们有如下的 DataFrame:
+
+id | features              | clicked
+---|-----------------------|---------
+ 7 | [0.0, 0.0, 18.0, 1.0] | 1.0
+ 8 | [0.0, 1.0, 12.0, 0.0] | 0.0
+ 9 | [1.0, 0.0, 15.0, 0.1] | 0.0
+
+然后我们设置 numTopFeatures = 1，根据我们的 clicked label 选择出来的 features 为：
+
+id | features              | clicked | selectedFeatures
+---|-----------------------|---------|------------------
+ 7 | [0.0, 0.0, 18.0, 1.0] | 1.0     | [1.0]
+ 8 | [0.0, 1.0, 12.0, 0.0] | 0.0     | [0.0]
+ 9 | [1.0, 0.0, 15.0, 0.1] | 0.0     | [0.1]
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.ChiSqSelectorExample \
+                                       --master yarn \
+                                       --deploy-mode cluster \
+                                       --driver-cores 1 \
+                                       --driver-memory 1024M \
+                                       --num-executors 1 \
+                                       --executor-cores 2 \
+                                       --executor-memory 4096M \
+                                       spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
+
+# 结果如下
++---+------------------+-------+----------------+
+| id|          features|clicked|selectedFeatures|
++---+------------------+-------+----------------+
+|  7|[0.0,0.0,18.0,1.0]|    1.0|           [1.0]|
+|  8|[0.0,1.0,12.0,0.0]|    0.0|           [0.0]|
+|  9|[1.0,0.0,15.0,0.1]|    0.0|           [0.1]|
++---+------------------+-------+----------------+
+```
 
 === Classification ===
+
+#### 22
+
 
 #### 23
 
@@ -1324,10 +1382,10 @@ select 语句设置了具体的输出，包括 fields，常量，表达式，比
 
 #### 27
 
+=== Regression ===
 
 #### 28
 
-=== Regression ===
 
 #### 29
 
