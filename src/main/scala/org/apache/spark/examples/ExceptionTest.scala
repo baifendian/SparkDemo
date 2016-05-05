@@ -71,32 +71,41 @@ spark-submit --class org.apache.spark.examples.ExceptionTest --master yarn --dep
 - 程序被 application kill(我们把 application kill 掉，通过 yarn 的命令)
   command: yarn application -kill xxx
   hadoop ui: KILLED	KILLED
+
+- 程序在初始化后 throws exception
+  hadoop ui: FINISHED	SUCCEEDED
  */
 object ExceptionTest {
   def main(args: Array[String]): Unit = {
-    if (args.length < 2) {
-      System.err.println("Usage: driver-mb, executor-mb")
+    if (args.length < 3) {
+      System.err.println("Usage: throw-exception, driver-mb, executor-mb")
       System.exit(1)
     }
 
-    val driverMb = args(0) toInt
-    val executorMb = args(1) toInt
+    val throwException = args(0) toBoolean
+    val driverMb = args(1) toInt
+    val executorMb = args(2) toInt
 
     val sparkConf = new SparkConf().setAppName("ExceptionTest")
     val sc = new SparkContext(sparkConf)
 
-    // 让 driver 内存溢出
-    val data = new Array[String](driverMb * 1024 * 1024)
+    if (throwException) {
+      throw new Exception("throw exception.")
+    } else {
+      // 让 driver 内存溢出
+      val data = new Array[String](driverMb * 1024 * 1024)
 
-    val v = sc.parallelize(1 to 10000, 100).map(x => {
-      // 让 executor 内存溢出
-      val data = new Array[String](executorMb * 1024 * 1024)
+      val v = sc.parallelize(1 to 10000, 100).map(x => {
+        Thread.sleep(50)
+        // 让 executor 内存溢出
+        val data = new Array[String](executorMb * 1024 * 1024)
 
-      x + 1
-    }).reduce(_ + _)
+        x + 1
+      }).reduce(_ + _)
 
-    println(v)
+      println(v)
 
-    sc.stop()
+      sc.stop()
+    }
   }
 }

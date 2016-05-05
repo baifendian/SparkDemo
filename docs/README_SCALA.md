@@ -763,7 +763,7 @@ spark.ml 的相关示例：
 
 === Extracting, transforming and selecting features(Extracting) ===
 
-#### 5 TfIdf 例子: [TfIdfExample](/src/main/scala/org/apache/spark/examples/ml/TfIdfExample.scala)
+#### 5 TfIdf 例子: [TfIdfExample](/src/main/scala/org/apache/spark/examples/ml/extraction/TfIdfExample.scala)
 
 TF-IDF 是一种通用的文本处理过程，它分为 TF 和 IDF 两个过程。相关资料请查阅：[tf-idf](https://en.wikipedia.org/wiki/Tf%E2%80%93idf)
 
@@ -773,7 +773,7 @@ IDF 是一种 Estimator，它 fits 一个 dataset，生成一个 IDFModel，这�
 代码提交方式如下：
 
 ```
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.TfIdfExample \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.extraction.TfIdfExample \
                                         --master yarn \
                                         --deploy-mode cluster \
                                         --driver-cores 1 \
@@ -784,7 +784,7 @@ IDF 是一种 Estimator，它 fits 一个 dataset，生成一个 IDFModel，这�
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
 ```
 
-#### 6 Word2Vec 例子: [Word2VecExample](/src/main/scala/org/apache/spark/examples/ml/Word2VecExample.scala)
+#### 6 Word2Vec 例子: [Word2VecExample](/src/main/scala/org/apache/spark/examples/ml/extraction/Word2VecExample.scala)
 
 word2vec 模型在文本分析中占有重要地位，具体的资料可以参加：[wiki-word2vec](https://en.wikipedia.org/wiki/Word2vec), 以及 [project-word2vec](http://deeplearning4j.org/word2vec)
 
@@ -793,7 +793,7 @@ Word2Vec 是一个 Estimator，接受一系列的 words（对 documents 的表�
 代码提交方式如下：
 
 ```
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.Word2VecExample \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.extraction.Word2VecExample \
                                         --master yarn \
                                         --deploy-mode cluster \
                                         --driver-cores 1 \
@@ -804,14 +804,14 @@ Word2Vec 是一个 Estimator，接受一系列的 words（对 documents 的表�
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
 ```
 
-#### 7 CountVectorizer 例子: [CountVectorizerExample](/src/main/scala/org/apache/spark/examples/ml/CountVectorizerExample.scala)
+#### 7 CountVectorizer 例子: [CountVectorizerExample](/src/main/scala/org/apache/spark/examples/ml/extraction/CountVectorizerExample.scala)
 
 CountVectorizer 和 CountVectorizerModel 的目标是将 text 文档集合转化为 token counts 的向量，当没有先验词典，CountVectorizer 当做 estimator 来使用，训练出 CountVectorizerModel，在拟合的过程中，CountVectorizer 会选择 top 的几个 words。可选参数 "minDF" 设置了单个 term 需要在多少个文档中出现的下限制（如果是 <1.0 则为比例）。
 
 代码提交方式如下：
 
 ```
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.CountVectorizerExample \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.extraction.CountVectorizerExample \
                                         --master yarn \
                                         --deploy-mode cluster \
                                         --driver-cores 1 \
@@ -835,7 +835,7 @@ CountVectorizer 和 CountVectorizerModel 的目标是将 text 文档集合转化
 
 === Extracting, transforming and selecting features(transforming) ===
 
-#### 8 Tokenizer 的例子，即分词示例: [TokenizerExample](/src/main/scala/org/apache/spark/examples/ml/TokenizerExample.scala)
+#### 8 Tokenizer 的例子，即分词示例: [TokenizerExample](/src/main/scala/org/apache/spark/examples/ml/transformation/TokenizerExample.scala)
 
 spark ml 提供了 2 种分词，一种是：Tokenization，另外一种是 RegexTokenizer。
 
@@ -846,7 +846,7 @@ RegexTokenizer 允许更加高级的分词，就是采用正则表达式来完�
 代码提交方式如下：
 
 ```
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.TokenizerExample \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.transformation.TokenizerExample \
                                         --master yarn \
                                         --deploy-mode cluster \
                                         --driver-cores 1 \
@@ -867,7 +867,7 @@ result of regex tokenizer...
 [WrappedArray(logistic, regression, models, are, neat),2]
 ```
 
-#### 9 停用词的例子，会删除停用词: [StopWordsRemoverExample](/src/main/scala/org/apache/spark/examples/ml/StopWordsRemoverExample.scala)
+#### 9 停用词的例子，会删除停用词: [StopWordsRemoverExample](/src/main/scala/org/apache/spark/examples/ml/transformation/StopWordsRemoverExample.scala)
 
 停用词指的是应该从 input 中删除的单词，StopWordsRemover 接受 strings 序列，然后从输入中删除停用词。
 
@@ -876,7 +876,7 @@ stopwords 列表由 stopWords 参数指定，默认提供的 stopwords 可以通
 代码提交方式如下：
 
 ```
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.StopWordsRemoverExample \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.transformation.StopWordsRemoverExample \
                                         --master yarn \
                                         --deploy-mode cluster \
                                         --driver-cores 1 \
@@ -904,7 +904,7 @@ stop words remove after add some words
 +---+--------------------+--------------------+
 ```
 
-#### 10 n-gram 示例: [NGramExample](/src/main/scala/org/apache/spark/examples/ml/NGramExample.scala)
+#### 10 n-gram 示例: [NGramExample](/src/main/scala/org/apache/spark/examples/ml/transformation/NGramExample.scala)
 
 n-gram 是指连续的 n 个 tokens（通常指的是 words），NGram 类用于将输入 features 转化为 n-grams。
 
@@ -913,7 +913,7 @@ n-gram 是指连续的 n 个 tokens（通常指的是 words），NGram 类用于
 代码提交方式如下：
 
 ```
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.NGramExample \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.transformation.NGramExample \
                                         --master yarn \
                                         --deploy-mode cluster \
                                         --driver-cores 1 \
@@ -929,7 +929,7 @@ List(I wish Java, wish Java could, Java could use, could use case, use case clas
 List(Logistic regression models, regression models are, models are neat)
 ```
 
-#### 11 Binarizer 示例: [BinarizerExample](/src/main/scala/org/apache/spark/examples/ml/BinarizerExample.scala)
+#### 11 Binarizer 示例: [BinarizerExample](/src/main/scala/org/apache/spark/examples/ml/transformation/BinarizerExample.scala)
 
 Binarization 是对数值类型进行处理，处理为二进制的 (0/1) features.
 
@@ -938,7 +938,7 @@ Binarizer 接受参数 inputCol 和 outputCol，以及一个 threshold 用于做
 代码提交方式如下：
 
 ```
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.BinarizerExample \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.transformation.BinarizerExample \
                                        --master yarn \
                                        --deploy-mode cluster \
                                        --driver-cores 1 \
@@ -954,14 +954,14 @@ Binarizer 接受参数 inputCol 和 outputCol，以及一个 threshold 用于做
 [0.0]
 ```
 
-#### 12 PCA 示例: [PCAExample](/src/main/scala/org/apache/spark/examples/ml/PCAExample.scala)
+#### 12 PCA 示例: [PCAExample](/src/main/scala/org/apache/spark/examples/ml/transformation/PCAExample.scala)
 
 PCA(Principal Component Analysis)是对高维数据进行降维，并且去除噪声的一种数据处理方式，更多资料参考见：[wiki](https://en.wikipedia.org/wiki/Principal_component_analysis)
 
 代码提交方式如下：
 
 ```
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.PCAExample \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.transformation.PCAExample \
                                        --master yarn \
                                        --deploy-mode cluster \
                                        --driver-cores 1 \
@@ -981,7 +981,7 @@ PCA(Principal Component Analysis)是对高维数据进行降维，并且去除�
 +--------------------+
 ```
 
-#### 13 字符串编码示例: [StringIndexerExample](/src/main/scala/org/apache/spark/examples/ml/StringIndexerExample.scala)
+#### 13 字符串编码示例: [StringIndexerExample](/src/main/scala/org/apache/spark/examples/ml/transformation/StringIndexerExample.scala)
 
 StringIndexer 对 string column 进行编码，编码为 label indices，具体的 indices 是 [0, numLabels)，根据 label 的频次有序排列。
 
@@ -1012,7 +1012,7 @@ StringIndexer 对 string column 进行编码，编码为 label indices，具体�
 代码提交方式如下：
 
 ```
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.StringIndexerExample \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.transformation.StringIndexerExample \
                                        --master yarn \
                                        --deploy-mode cluster \
                                        --driver-cores 1 \
@@ -1035,7 +1035,7 @@ StringIndexer 对 string column 进行编码，编码为 label indices，具体�
 +---+--------+-------------+
 ```
 
-#### 14 将编码转化为字符串的示例: [IndexToStringExample](/src/main/scala/org/apache/spark/examples/ml/IndexToStringExample.scala)
+#### 14 将编码转化为字符串的示例: [IndexToStringExample](/src/main/scala/org/apache/spark/examples/ml/transformation/IndexToStringExample.scala)
 
 这个过程是和上面的 StringIndexer 相反，它将 label 字段还原为 strings，通常的场景是根据 StringIndexer 训练出一个模型，然后从预测的编码中要还原出原始 label 的话，借助 IndexToString。
 
@@ -1043,7 +1043,7 @@ StringIndexer 对 string column 进行编码，编码为 label indices，具体�
 代码提交方式如下：
 
 ```
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.IndexToStringExample \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.transformation.IndexToStringExample \
                                        --master yarn \
                                        --deploy-mode cluster \
                                        --driver-cores 1 \
@@ -1066,7 +1066,7 @@ StringIndexer 对 string column 进行编码，编码为 label indices，具体�
 +---+----------------+
 ```
 
-#### 15 向量的编码示例: [VectorIndexerExample](/src/main/scala/org/apache/spark/examples/ml/VectorIndexerExample.scala)
+#### 15 向量的编码示例: [VectorIndexerExample](/src/main/scala/org/apache/spark/examples/ml/transformation/VectorIndexerExample.scala)
 
 对 vectors 进行索引编码，会自动的判断出哪个 features 需要编码，哪些不需要，最终会将原始的 values 进行转换，其过程如下：
 
@@ -1078,7 +1078,7 @@ StringIndexer 对 string column 进行编码，编码为 label indices，具体�
 代码提交方式如下：
 
 ```
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.VectorIndexerExample \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.transformation.VectorIndexerExample \
                                        --master yarn \
                                        --deploy-mode cluster \
                                        --driver-cores 1 \
@@ -1117,14 +1117,14 @@ Chose 351 categorical features: 645, 69, 365, 138, 101, 479, 333, 249, 0, 555, 6
 only showing top 20 rows
 ```
 
-#### 16 归一化示例: [NormalizerExample](/src/main/scala/org/apache/spark/examples/ml/NormalizerExample.scala)
+#### 16 归一化示例: [NormalizerExample](/src/main/scala/org/apache/spark/examples/ml/transformation/NormalizerExample.scala)
 
 归一化是指将每个独立样本做尺度变换从而是该样本具有单位 Lp 范数。这是文本分类和聚类中的常用操作。例如，两个做了 L2 归一化的 TF-IDF 向量的点积是这两个向量的 cosine（余弦）相似度。
 
 代码提交方式如下：
 
 ```
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.NormalizerExample \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.transformation.NormalizerExample \
                                        --master yarn \
                                        --deploy-mode cluster \
                                        --driver-cores 1 \
@@ -1188,14 +1188,14 @@ only showing top 20 rows
 only showing top 20 rows
 ```
 
-#### 17 向量 "相乘" 的示例 [ElementwiseProductExample](/src/main/scala/org/apache/spark/examples/ml/ElementwiseProductExample.scala)
+#### 17 向量 "相乘" 的示例 [ElementwiseProductExample](/src/main/scala/org/apache/spark/examples/ml/transformation/ElementwiseProductExample.scala)
 
 对每个输入的向量，需要乘上一个 "weight" 向量，这个乘法也是相当的简单，计算规则见：[Hadamard product](https://en.wikipedia.org/wiki/Hadamard_product_%28matrices%29)
 
 代码提交方式如下：
 
 ```
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.ElementwiseProductExample \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.transformation.ElementwiseProductExample \
                                        --master yarn \
                                        --deploy-mode cluster \
                                        --driver-cores 1 \
@@ -1214,7 +1214,7 @@ only showing top 20 rows
 +---+-------------+-----------------+
 ```
 
-#### 18 SQL 语句进行转换的示例: [SQLTransformerExample](/src/main/scala/org/apache/spark/examples/ml/SQLTransformerExample.scala)
+#### 18 SQL 语句进行转换的示例: [SQLTransformerExample](/src/main/scala/org/apache/spark/examples/ml/transformation/SQLTransformerExample.scala)
 
 支持通过写 SQL 语句来完成 transformations，这个确实很强大，不过只支持一些简单的语法，如 "SELECT ... FROM __THIS__ ...". __THIS__ 表示输入 dataset 的名称。
 
@@ -1241,7 +1241,7 @@ select 语句设置了具体的输出，包括 fields，常量，表达式，比
 代码提交方式如下：
 
 ```
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.SQLTransformerExample \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.transformation.SQLTransformerExample \
                                        --master yarn \
                                        --deploy-mode cluster \
                                        --driver-cores 1 \
@@ -1260,7 +1260,7 @@ select 语句设置了具体的输出，包括 fields，常量，表达式，比
 +---+---+---+---+----+
 ```
 
-#### 19 向量的合并操作 [VectorAssemblerExample](/src/main/scala/org/apache/spark/examples/ml/VectorAssembler.scala)
+#### 19 向量的合并操作 [VectorAssemblerExample](/src/main/scala/org/apache/spark/examples/ml/transformation/VectorAssembler.scala)
 
 向量合并的工作是需要将给定的 column list 合并为一个唯一的 vector column，一般用于将 raw features 和由其它 transformers 转化的 features 进行合并，得到一个单个的 feature vector。
 
@@ -1283,7 +1283,7 @@ select 语句设置了具体的输出，包括 fields，常量，表达式，比
 代码提交方式如下：
 
 ```
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.VectorAssemblerExample \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.transformation.VectorAssemblerExample \
                                        --master yarn \
                                        --deploy-mode cluster \
                                        --driver-cores 1 \
@@ -1299,14 +1299,14 @@ select 语句设置了具体的输出，包括 fields，常量，表达式，比
 
 === Extracting, transforming and selecting features(selecting features) ===
 
-#### 20 向量切片转换器示例: [VectorSlicerExample](/src/main/scala/org/apache/spark/examples/ml/VectorSlicerExample.scala)
+#### 20 向量切片转换器示例: [VectorSlicerExample](/src/main/scala/org/apache/spark/examples/ml/selection/VectorSlicerExample.scala)
 
 VectorSlicer 是一个 transformer，它接受一个 feature vector，输出的是一个新的 feature vector，它具备原始 features 的 sub-array。一般用于从 vector column 中抽取特征。
 
 代码提交方式如下：
 
 ```
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.VectorSlicerExample \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.selection.VectorSlicerExample \
                                        --master yarn \
                                        --deploy-mode cluster \
                                        --driver-cores 1 \
@@ -1320,7 +1320,7 @@ VectorSlicer 是一个 transformer，它接受一个 feature vector，输出的�
 [[-2.0,2.3,0.0],[2.3,0.0]]
 ```
 
-#### 21 卡方分布获取特征示例: [ChiSqSelectorExample](/src/main/scala/org/apache/spark/examples/ml/ChiSqSelectorExample.scala)
+#### 21 卡方分布获取特征示例: [ChiSqSelectorExample](/src/main/scala/org/apache/spark/examples/ml/selection/ChiSqSelectorExample.scala)
 
 根据 [Chi-Squared](https://en.wikipedia.org/wiki/Chi-squared) 的方式来选取特征，首先会根据 Chi-Squared test 来对 features 进行排序（其实会检验 features 和 label 之间的独立性），然后过滤选出最靠前的几个特征，最终得出的 features 是最有预测能力的。
 
@@ -1343,7 +1343,7 @@ id | features              | clicked | selectedFeatures
 代码提交方式如下：
 
 ```
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.ChiSqSelectorExample \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.selection.ChiSqSelectorExample \
                                        --master yarn \
                                        --deploy-mode cluster \
                                        --driver-cores 1 \
