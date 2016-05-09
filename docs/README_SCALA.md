@@ -1923,40 +1923,339 @@ label	fpr
 
 === Regression ===
 
-#### 28
+#### 28 线性回归示例: [LinearRegressionWithElasticNetExample](/src/main/scala/org/apache/spark/examples/ml/regression/LinearRegressionWithElasticNetExample.scala)
 
+代码提交方式如下：
 
-#### 29
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.regression.LinearRegressionWithElasticNetExample \
+                                       --master yarn \
+                                       --deploy-mode cluster \
+                                       --driver-cores 1 \
+                                       --driver-memory 1024M \
+                                       --num-executors 4 \
+                                       --executor-cores 2 \
+                                       --executor-memory 4096M \
+                                       spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /user/qifeng.dai/input/sample_libsvm_data.txt
 
+# 结果如下
+Coefficients: (692,[300,378,406,407,433,434,461,462,483,489,490,517],[-1.8078924738535276E-6,2.0278116139676124E-4,3.023979903864483E-4,1.4914792601448672E-4,2.1023616090368408E-4,3.2238027474542236E-4,1.4705998776106348E-4,3.043294522421017E-4,-4.4086910361962904E-7,1.4268258742227365E-4,1.4373333249357234E-4,1.44520875664922E-4]) Intercept: 0.29988458600501944
+numIterations: 11
+objectiveHistory: List(0.4949999999999999, 0.46399875031817656, 0.4336824247251912, 0.42624784802433213, 0.41495322169597887, 0.40518718310849106, 0.40189116243195355, 0.39727355840898415, 0.3948017818428975, 0.39108137561895845, 0.3904422784616588)
++--------------------+
+|           residuals|
++--------------------+
+|-0.29931609019502237|
+|  0.2076176352543707|
+| 0.19244665926887083|
+|  0.2746457891280665|
+|  0.1961473470132742|
+| -0.3066202686593571|
+| 0.21291588692079233|
+|  0.6470733926246883|
+| -0.3198689956910858|
+| -0.2993764892622182|
+| 0.17927483015846524|
+|-0.29931564932591875|
+|-0.29931564932591875|
+| 0.25639586496389644|
+| -0.3904771873162662|
+| 0.18975466813223396|
+| -0.2997849495876014|
+| -0.2994189459443439|
+| 0.20784522758355228|
+| 0.21786989912981214|
++--------------------+
+only showing top 20 rows
 
-#### 30
+RMSE: 0.26965884993334
+r2: 0.7033215204105606
+```
 
+#### 29 决策树回归示例: [DecisionTreeRegressionExample](/src/main/scala/org/apache/spark/examples/ml/regression/DecisionTreeRegressionExample.scala)
 
-#### 31
+代码提交方式如下：
 
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.regression.DecisionTreeRegressionExample \
+                                       --master yarn \
+                                       --deploy-mode cluster \
+                                       --driver-cores 1 \
+                                       --driver-memory 1024M \
+                                       --num-executors 4 \
+                                       --executor-cores 2 \
+                                       --executor-memory 4096M \
+                                       spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /user/qifeng.dai/input/sample_libsvm_data.txt
 
-#### 32
+# 结果如下
++----------+-----+--------------------+
+|prediction|label|            features|
++----------+-----+--------------------+
+|       0.0|  0.0|(692,[127,128,129...|
+|       0.0|  0.0|(692,[153,154,155...|
+|       0.0|  0.0|(692,[151,152,153...|
+|       1.0|  1.0|(692,[150,151,152...|
+|       1.0|  1.0|(692,[97,98,99,12...|
++----------+-----+--------------------+
+only showing top 5 rows
 
+Root Mean Squared Error (RMSE) on test data = 0.0
+Learned regression tree model:
+DecisionTreeRegressionModel (uid=dtr_82e4e2d5d6ed) of depth 2 with 5 nodes
+  If (feature 434 <= 0.0)
+   If (feature 99 in {0.0,3.0})
+    Predict: 0.0
+   Else (feature 99 not in {0.0,3.0})
+    Predict: 1.0
+  Else (feature 434 > 0.0)
+   Predict: 1.0
+```
 
-#### 33
+#### 30 随机森林回归示例: [RandomForestRegressorExample](/src/main/scala/org/apache/spark/examples/ml/regression/RandomForestRegressorExample.scala)
 
-=== Decision trees ===
+代码提交方式如下：
 
-#### 34
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.regression.RandomForestRegressorExample \
+                                       --master yarn \
+                                       --deploy-mode cluster \
+                                       --driver-cores 1 \
+                                       --driver-memory 1024M \
+                                       --num-executors 4 \
+                                       --executor-cores 2 \
+                                       --executor-memory 4096M \
+                                       spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /user/qifeng.dai/input/sample_libsvm_data.txt
 
+# 结果如下
++----------+-----+--------------------+
+|prediction|label|            features|
++----------+-----+--------------------+
+|       1.0|  1.0|(692,[158,159,160...|
+|       1.0|  1.0|(692,[152,153,154...|
+|       1.0|  1.0|(692,[151,152,153...|
+|      0.45|  0.0|(692,[154,155,156...|
+|       0.0|  0.0|(692,[127,128,129...|
++----------+-----+--------------------+
+only showing top 5 rows
 
-#### 35
+Root Mean Squared Error (RMSE) on test data = 0.1559709045845509
+Learned regression forest model:
+RandomForestRegressionModel (uid=rfr_30593cad8b99) with 20 trees
+  Tree 0 (weight 1.0):
+    If (feature 490 <= 0.0)
+     Predict: 0.0
+    Else (feature 490 > 0.0)
+     Predict: 1.0
+  Tree 1 (weight 1.0):
+    If (feature 357 <= 0.0)
+     Predict: 1.0
+    Else (feature 357 > 0.0)
+     Predict: 0.0
+  Tree 2 (weight 1.0):
+    If (feature 462 <= 0.0)
+     Predict: 0.0
+    Else (feature 462 > 0.0)
+     Predict: 1.0
+  Tree 3 (weight 1.0):
+    If (feature 406 <= 0.0)
+     Predict: 0.0
+    Else (feature 406 > 0.0)
+     If (feature 294 <= 254.0)
+      Predict: 1.0
+     Else (feature 294 > 254.0)
+      Predict: 0.0
+  Tree 4 (weight 1.0):
+    If (feature 434 <= 0.0)
+     If (feature 627 <= 0.0)
+      Predict: 1.0
+     Else (feature 627 > 0.0)
+      Predict: 0.0
+    Else (feature 434 > 0.0)
+     Predict: 1.0
+  Tree 5 (weight 1.0):
+    If (feature 400 <= 0.0)
+     If (feature 483 <= 0.0)
+      Predict: 1.0
+     Else (feature 483 > 0.0)
+      Predict: 0.0
+    Else (feature 400 > 0.0)
+     Predict: 0.0
+  Tree 6 (weight 1.0):
+    If (feature 456 <= 0.0)
+     Predict: 1.0
+    Else (feature 456 > 0.0)
+     Predict: 0.0
+  Tree 7 (weight 1.0):
+    If (feature 511 <= 0.0)
+     Predict: 1.0
+    Else (feature 511 > 0.0)
+     Predict: 0.0
+  Tree 8 (weight 1.0):
+    If (feature 406 <= 0.0)
+     Predict: 0.0
+    Else (feature 406 > 0.0)
+     Predict: 1.0
+  Tree 9 (weight 1.0):
+    If (feature 406 <= 0.0)
+     Predict: 0.0
+    Else (feature 406 > 0.0)
+     If (feature 400 <= 0.0)
+      Predict: 1.0
+     Else (feature 400 > 0.0)
+      Predict: 0.0
+  Tree 10 (weight 1.0):
+    If (feature 455 <= 23.0)
+     Predict: 1.0
+    Else (feature 455 > 23.0)
+     Predict: 0.0
+  Tree 11 (weight 1.0):
+    If (feature 407 <= 0.0)
+     If (feature 597 <= 0.0)
+      Predict: 1.0
+     Else (feature 597 > 0.0)
+      Predict: 0.0
+    Else (feature 407 > 0.0)
+     Predict: 1.0
+  Tree 12 (weight 1.0):
+    If (feature 483 <= 0.0)
+     If (feature 524 <= 180.0)
+      Predict: 1.0
+     Else (feature 524 > 180.0)
+      Predict: 0.0
+    Else (feature 483 > 0.0)
+     Predict: 0.0
+  Tree 13 (weight 1.0):
+    If (feature 490 <= 0.0)
+     Predict: 0.0
+    Else (feature 490 > 0.0)
+     Predict: 1.0
+  Tree 14 (weight 1.0):
+    If (feature 379 <= 0.0)
+     Predict: 0.0
+    Else (feature 379 > 0.0)
+     Predict: 1.0
+  Tree 15 (weight 1.0):
+    If (feature 483 <= 0.0)
+     If (feature 659 <= 251.0)
+      Predict: 1.0
+     Else (feature 659 > 251.0)
+      Predict: 0.0
+    Else (feature 483 > 0.0)
+     Predict: 0.0
+  Tree 16 (weight 1.0):
+    If (feature 462 <= 0.0)
+     If (feature 407 <= 71.0)
+      Predict: 0.0
+     Else (feature 407 > 71.0)
+      Predict: 1.0
+    Else (feature 462 > 0.0)
+     Predict: 1.0
+  Tree 17 (weight 1.0):
+    If (feature 517 <= 41.0)
+     Predict: 0.0
+    Else (feature 517 > 41.0)
+     Predict: 1.0
+  Tree 18 (weight 1.0):
+    If (feature 511 <= 0.0)
+     Predict: 1.0
+    Else (feature 511 > 0.0)
+     Predict: 0.0
+  Tree 19 (weight 1.0):
+    If (feature 434 <= 0.0)
+     Predict: 0.0
+    Else (feature 434 > 0.0)
+     Predict: 1.0
+```
 
-=== Tree Ensembles ===
+#### 31 Gradient-boosted 树回归示例: [GradientBoostedTreeRegressorExample](/src/main/scala/org/apache/spark/examples/ml/regression/GradientBoostedTreeRegressorExample.scala)
 
-#### 36
+代码提交方式如下：
 
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.regression.GradientBoostedTreeRegressorExample \
+                                       --master yarn \
+                                       --deploy-mode cluster \
+                                       --driver-cores 1 \
+                                       --driver-memory 1024M \
+                                       --num-executors 4 \
+                                       --executor-cores 2 \
+                                       --executor-memory 4096M \
+                                       spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /user/qifeng.dai/input/sample_libsvm_data.txt
 
-#### 37
+# 结果如下
++----------+-----+--------------------+
+|prediction|label|            features|
++----------+-----+--------------------+
+|       1.0|  1.0|(692,[151,152,153...|
+|       0.0|  0.0|(692,[153,154,155...|
+|       1.0|  1.0|(692,[129,130,131...|
+|       0.0|  0.0|(692,[153,154,155...|
+|       0.0|  0.0|(692,[155,156,180...|
++----------+-----+--------------------+
+only showing top 5 rows
+
+Root Mean Squared Error (RMSE) on test data = 0.21821789023599236
+Learned regression GBT model:
+GBTRegressionModel (uid=gbtr_08a2dc9b9618) with 10 trees
+  Tree 0 (weight 1.0):
+    If (feature 406 <= 72.0)
+     If (feature 99 in {0.0,3.0})
+      Predict: 0.0
+     Else (feature 99 not in {0.0,3.0})
+      Predict: 1.0
+    Else (feature 406 > 72.0)
+     Predict: 1.0
+  Tree 1 (weight 0.1):
+    Predict: 0.0
+  Tree 2 (weight 0.1):
+    Predict: 0.0
+  Tree 3 (weight 0.1):
+    Predict: 0.0
+  Tree 4 (weight 0.1):
+    Predict: 0.0
+  Tree 5 (weight 0.1):
+    Predict: 0.0
+  Tree 6 (weight 0.1):
+    Predict: 0.0
+  Tree 7 (weight 0.1):
+    Predict: 0.0
+  Tree 8 (weight 0.1):
+    Predict: 0.0
+  Tree 9 (weight 0.1):
+    Predict: 0.0
+```
+
+#### 32 Survival 回归示例: [AFTSurvivalRegressionExample](/src/main/scala/org/apache/spark/examples/ml/regression/AFTSurvivalRegressionExample.scala)
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.regression.AFTSurvivalRegressionExample \
+                                       --master yarn \
+                                       --deploy-mode cluster \
+                                       --driver-cores 1 \
+                                       --driver-memory 1024M \
+                                       --num-executors 4 \
+                                       --executor-cores 2 \
+                                       --executor-memory 4096M \
+                                       spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /user/qifeng.dai/input/sample_libsvm_data.txt
+
+# 结果如下
+Coefficients: [0.0,0.0] Intercept: 0.0 Scale: 1.0
++-----+------+--------------+----------+--------------------------------------+
+|label|censor|features      |prediction|quantiles                             |
++-----+------+--------------+----------+--------------------------------------+
+|1.218|1.0   |[1.56,-0.605] |1.0       |[0.3566749439387325,0.916290731874155]|
+|2.949|0.0   |[0.346,2.158] |1.0       |[0.3566749439387325,0.916290731874155]|
+|3.627|0.0   |[1.38,0.231]  |1.0       |[0.3566749439387325,0.916290731874155]|
+|0.273|1.0   |[0.52,1.151]  |1.0       |[0.3566749439387325,0.916290731874155]|
+|4.199|0.0   |[0.795,-0.226]|1.0       |[0.3566749439387325,0.916290731874155]|
++-----+------+--------------+----------+--------------------------------------+
+```
 
 === Clustering ===
 
-#### 45 KMeans 聚类示例: [KMeansExample](/src/main/scala/org/apache/spark/examples/ml/KMeansExample.scala)
+#### 33 KMeans 聚类示例: [KMeansExample](/src/main/scala/org/apache/spark/examples/ml/KMeansExample.scala)
 
 k-means 是一种最常用的聚类算法，将数据聚类到指定数目的簇中，MLLib 实现的称之为 kmeans。
 
@@ -2004,7 +2303,7 @@ Show cluster results:
 +---+-------------+----------+
 ```
 
-#### 46 LDA 示例: [LDAExample](/src/main/scala/org/apache/spark/examples/ml/LDAExample.scala)
+#### 34 LDA 示例: [LDAExample](/src/main/scala/org/apache/spark/examples/ml/LDAExample.scala)
 
 LDA 实现为一个 Estimator，支持 EMLDAOptimizer， OnlineLDAOptimizer，且生成了一个 LDAModel 作为基本模型。
 
@@ -2054,6 +2353,17 @@ LDA 实现为一个 Estimator，支持 EMLDAOptimizer， OnlineLDAOptimizer，�
 |[4.0,1.0,0.0,0.0,4.0,5.0,1.0,3.0,0.0,1.0,0.0]|[0.004883584448476539,0.004883515376787107,0.0048836957142951495,0.9556634928588742,0.004883488803784198,0.005078566185072326,0.005073067729107334,0.004883642822122609,0.00488352567913721,0.004883420382343438]      |
 +---------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
+
+=== In Practice ===
+
+#### 35 
+
+
+#### 36 
+
+
+#### 37
+
 
 ### 示例11. GraphX
 
