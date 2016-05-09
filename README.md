@@ -2,7 +2,7 @@ SparkDemo
 ====
 
 ### 概述
-本项目主要提供了 Spark 示例，示例涵盖了 python，java，scala，r 语言，且包括 Streaming，Sql，Mllib，GraphX，Bagel，SparkR 等方面示例。
+本项目主要提供了 Spark 示例，示例涵盖了 python，java，scala，r 语言，且包括 Streaming，Sql，Mllib，GraphX，SparkR 等方面示例。
 
 本文档代码示例参考了：[spark-examples](https://github.com/apache/spark/tree/master/examples)，我们假定大家是初学者，对于代码的使用说明做了充分的说明。
 

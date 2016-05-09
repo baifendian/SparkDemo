@@ -411,7 +411,7 @@ total 8
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /user/qifeng.dai/input/ratings.dat 172.18.1.22 6379 0
 ```
 
-### 示例8. SQL
+### 示例8. SQL 使用示例
 
 #### 1 DataFrame 的基本操作: [DataFrameTest](/src/main/scala/org/apache/spark/examples/sql/DataFrameTest.scala)
 
@@ -501,7 +501,7 @@ total 8
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /user/qifeng.dai/input/weather.txt
 ```
 
-### 示例9. Streaming
+### 示例9. Streaming 使用示例
 
 本章示例来自 [streaming](https://github.com/apache/spark/tree/master/examples/src/main/scala/org/apache/spark/examples/streaming), 这里的示例已经非常之详尽，这里主要对其进行分析讲解，会有少量的改动。
 
@@ -668,7 +668,7 @@ hello world
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar 172.18.1.22 9999 /user/qifeng.dai/checkpoint 172.18.1.22 6379
 ```
 
-### 示例10. MLLib
+### 示例10. MLLib 使用示例
 
 MLlib 是 Spark 的机器学习库，主要包括一些学习算法，如：分类，回归，聚类，协同过滤，维度消减，一些相对 lower-level 的优化功能，以及 higher-level 的 pipeline APIs。
 
@@ -2365,7 +2365,7 @@ LDA 实现为一个 Estimator，支持 EMLDAOptimizer， OnlineLDAOptimizer，�
 #### 37
 
 
-### 示例11. GraphX
+### 示例11. GraphX 使用示例
 
 图是一个比较宽泛的主题，关于图以及相关的应用，用户可以参考一些资料，包括 Danai Koutra 教授的 "Node and Graph Similarity: Theory and Applications", Google 的论文 [Pregel](https://www.google.com.sg/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&ved=0ahUKEwj-y7Cok8TLAhVLmJQKHe9vDpgQFggdMAA&url=https%3A%2F%2Fkowshik.github.io%2FJPregel%2Fpregel_paper.pdf&usg=AFQjCNFhxY3UjAhPdZIEk51P6ACPOormtA) 等都是非常经典的文献 。
 
