@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.apache.hbase:hbase-server:test-jar:tests:0.98.7-hadoop2">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/hbase/hbase-server/0.98.7-hadoop2/hbase-server-0.98.7-hadoop2-tests.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/hbase/hbase-server/0.98.7-hadoop2/hbase-server-0.98.7-hadoop2-test-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/hbase/hbase-server/0.98.7-hadoop2/hbase-server-0.98.7-hadoop2-test-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
