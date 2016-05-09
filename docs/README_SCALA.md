@@ -1365,22 +1365,561 @@ id | features              | clicked | selectedFeatures
 
 === Classification ===
 
-#### 22
+#### 22 逻辑回归示例: [LogisticRegressionExample](/src/main/scala/org/apache/spark/examples/ml/classification/LogisticRegressionExample.scala)
 
+逻辑回归是一种比较流行的二分类问题，具体可以参见一些资料: [Logistic_regression](https://en.wikipedia.org/wiki/Logistic_regression)
 
-#### 23
+目前在 ml 中，只支持了二分类，未来会对多分类问题也进行支持。
 
+代码提交方式如下：
 
-#### 24
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.classification.LogisticRegressionExample \
+                                       --master yarn \
+                                       --deploy-mode cluster \
+                                       --driver-cores 1 \
+                                       --driver-memory 1024M \
+                                       --num-executors 4 \
+                                       --executor-cores 2 \
+                                       --executor-memory 4096M \
+                                       spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /user/qifeng.dai/input/sample_libsvm_data.txt
 
+# 结果如下
+Coefficients: (692,[244,263,272,300,301,328,350,351,378,379,405,406,407,428,433,434,455,456,461,462,483,484,489,490,496,511,512,517,539,540,568],[-7.353983524188262E-5,-9.102738505589527E-5,-1.9467430546904626E-4,-2.0300642473487015E-4,-3.1476183314860777E-5,-6.842977602660796E-5,1.5883626898245863E-5,1.402349709137544E-5,3.5432047524968383E-4,1.1443272898171381E-4,1.0016712383667109E-4,6.01410930379546E-4,2.8402481791227455E-4,-1.1541084736508898E-4,3.8599688631290186E-4,6.350195574241048E-4,-1.150641238457574E-4,-1.5271865864986873E-4,2.804933808994195E-4,6.070117471191623E-4,-2.0084596632474595E-4,-1.4210755792901355E-4,2.7390103411608675E-4,2.773045624496799E-4,-9.838027027269408E-5,-3.808522443517932E-4,-2.5315198008556074E-4,2.774771477075416E-4,-2.4436197639192967E-4,-0.001539474468759761,-2.3073328411332247E-4]) Intercept: 0.2245631596125049
+0.6833149135741656
+0.6662875751473731
+0.6217068546034619
+0.6127265245887888
+0.606034798680287
+0.6031750687571562
+0.5969621534836276
+0.5940743031983124
+0.5906089243339021
+0.5894724576491039
+0.588218777572959
++---+--------------------+
+|FPR|                 TPR|
++---+--------------------+
+|0.0|                 0.0|
+|0.0|0.017543859649122806|
+|0.0| 0.03508771929824561|
+|0.0| 0.05263157894736842|
+|0.0| 0.07017543859649122|
+|0.0| 0.08771929824561403|
+|0.0| 0.10526315789473684|
+|0.0| 0.12280701754385964|
+|0.0| 0.14035087719298245|
+|0.0| 0.15789473684210525|
+|0.0| 0.17543859649122806|
+|0.0| 0.19298245614035087|
+|0.0| 0.21052631578947367|
+|0.0| 0.22807017543859648|
+|0.0| 0.24561403508771928|
+|0.0|  0.2631578947368421|
+|0.0|  0.2807017543859649|
+|0.0|  0.2982456140350877|
+|0.0|  0.3157894736842105|
+|0.0|  0.3333333333333333|
++---+--------------------+
+only showing top 20 rows
 
-#### 25
+1.0
+bestThreshold: 0.5585022394278361
+(0.0) -> prob=[0.676482724316062,0.32351727568393795], prediction=0.0
+(1.0) -> prob=[0.22640965216205305,0.7735903478379469], prediction=1.0
+(1.0) -> prob=[0.2210316383828498,0.7789683616171502], prediction=1.0
+(1.0) -> prob=[0.2526490765347192,0.7473509234652809], prediction=1.0
+(1.0) -> prob=[0.22494007343582248,0.7750599265641775], prediction=1.0
+(0.0) -> prob=[0.6766450451466386,0.32335495485336146], prediction=0.0
+(1.0) -> prob=[0.22928932070495942,0.7707106792950406], prediction=1.0
+(1.0) -> prob=[0.441497760572164,0.5585022394278361], prediction=0.0
+(0.0) -> prob=[0.5258703919180372,0.4741296080819628], prediction=0.0
+(0.0) -> prob=[0.6730857354540937,0.3269142645459063], prediction=0.0
+(1.0) -> prob=[0.21675509297450063,0.7832449070254994], prediction=1.0
+(0.0) -> prob=[0.6433037415078707,0.3566962584921292], prediction=0.0
+(0.0) -> prob=[0.6887773785344743,0.3112226214655257], prediction=0.0
+(1.0) -> prob=[0.24290074953354387,0.7570992504664562], prediction=1.0
+......
+```
 
+#### 23 决策树分类示例: [DecisionTreeClassificationExample](/src/main/scala/org/apache/spark/examples/ml/classification/DecisionTreeClassificationExample.scala)
 
-#### 26
+决策树也是一种非常流行的分类算法，具体可以参见一些资料: [Decision_tree_learning](https://en.wikipedia.org/wiki/Decision_tree_learning)
 
+代码提交方式如下：
 
-#### 27
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.classification.DecisionTreeClassificationExample \
+                                       --master yarn \
+                                       --deploy-mode cluster \
+                                       --driver-cores 1 \
+                                       --driver-memory 1024M \
+                                       --num-executors 4 \
+                                       --executor-cores 2 \
+                                       --executor-memory 4096M \
+                                       spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /user/qifeng.dai/input/sample_libsvm_data.txt
+
+# 结果如下
++--------------+-----+--------------------+
+|predictedLabel|label|            features|
++--------------+-----+--------------------+
+|           1.0| -1.0|(119,[2,10,13,18,...|
+|          -1.0| -1.0|(119,[1,5,13,19,3...|
+|          -1.0| -1.0|(119,[0,5,13,21,3...|
+|          -1.0| -1.0|(119,[0,5,16,18,3...|
+|          -1.0|  1.0|(119,[4,17,18,38,...|
++--------------+-----+--------------------+
+only showing top 5 rows
+
+Test Error = 0.20425531914893613
+Learned classification tree model:
+DecisionTreeClassificationModel (uid=dtc_e4886039aa5a) of depth 5 with 57 nodes
+  If (feature 39 in {0.0})
+   If (feature 73 in {0.0})
+    If (feature 38 in {0.0})
+     If (feature 5 in {1.0})
+      If (feature 80 in {0.0})
+       Predict: 0.0
+      Else (feature 80 not in {0.0})
+       Predict: 1.0
+     Else (feature 5 not in {1.0})
+      If (feature 43 in {1.0})
+       Predict: 0.0
+      Else (feature 43 not in {1.0})
+       Predict: 1.0
+    Else (feature 38 not in {0.0})
+     If (feature 13 in {1.0})
+      If (feature 2 in {0.0})
+       Predict: 0.0
+      Else (feature 2 not in {0.0})
+       Predict: 1.0
+     Else (feature 13 not in {1.0})
+      Predict: 1.0
+   Else (feature 73 not in {0.0})
+    If (feature 38 in {0.0})
+     If (feature 98 in {0.0})
+      If (feature 50 in {0.0})
+       Predict: 0.0
+      Else (feature 50 not in {0.0})
+       Predict: 0.0
+     Else (feature 98 not in {0.0})
+      Predict: 1.0
+    Else (feature 38 not in {0.0})
+     If (feature 81 in {0.0})
+      If (feature 31 in {0.0})
+       Predict: 0.0
+      Else (feature 31 not in {0.0})
+       Predict: 1.0
+     Else (feature 81 not in {0.0})
+      If (feature 28 in {0.0})
+       Predict: 0.0
+      Else (feature 28 not in {0.0})
+       Predict: 1.0
+  Else (feature 39 not in {0.0})
+   If (feature 38 in {0.0})
+    If (feature 50 in {0.0})
+     If (feature 3 in {0.0})
+      If (feature 4 in {0.0})
+       Predict: 0.0
+      Else (feature 4 not in {0.0})
+       Predict: 0.0
+     Else (feature 3 not in {0.0})
+      If (feature 34 in {1.0})
+       Predict: 0.0
+      Else (feature 34 not in {1.0})
+       Predict: 1.0
+    Else (feature 50 not in {0.0})
+     If (feature 73 in {1.0})
+      If (feature 16 in {0.0})
+       Predict: 0.0
+      Else (feature 16 not in {0.0})
+       Predict: 1.0
+     Else (feature 73 not in {1.0})
+      Predict: 1.0
+   Else (feature 38 not in {0.0})
+    If (feature 18 in {0.0})
+     If (feature 15 in {0.0})
+      If (feature 108 in {1.0})
+       Predict: 0.0
+      Else (feature 108 not in {1.0})
+       Predict: 1.0
+     Else (feature 15 not in {0.0})
+      If (feature 77 in {1.0})
+       Predict: 0.0
+      Else (feature 77 not in {1.0})
+       Predict: 1.0
+    Else (feature 18 not in {0.0})
+     If (feature 73 in {0.0})
+      If (feature 53 in {1.0})
+       Predict: 0.0
+      Else (feature 53 not in {1.0})
+       Predict: 1.0
+     Else (feature 73 not in {0.0})
+      If (feature 75 in {1.0})
+       Predict: 0.0
+      Else (feature 75 not in {1.0})
+       Predict: 1.0
+```
+
+#### 24 随机森林示例: [RandomForestClassifierExample](/src/main/scala/org/apache/spark/examples/ml/classification/RandomForestClassifierExample.scala)
+
+随机森林应该说是一种非常 popular 的分类和回归方法，具体可以参见一些资料: [Random_forest](https://en.wikipedia.org/wiki/Random_forest)
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.classification.RandomForestClassifierExample \
+                                       --master yarn \
+                                       --deploy-mode cluster \
+                                       --driver-cores 1 \
+                                       --driver-memory 1024M \
+                                       --num-executors 4 \
+                                       --executor-cores 2 \
+                                       --executor-memory 4096M \
+                                       spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /user/qifeng.dai/input/sample_libsvm_data.txt
+
+# 结果如下
++--------------+-----+--------------------+
+|predictedLabel|label|            features|
++--------------+-----+--------------------+
+|           1.0|  1.0|(692,[158,159,160...|
+|           1.0|  1.0|(692,[152,153,154...|
+|           0.0|  0.0|(692,[154,155,156...|
+|           0.0|  0.0|(692,[151,152,153...|
+|           1.0|  1.0|(692,[129,130,131...|
++--------------+-----+--------------------+
+only showing top 5 rows
+
+Test Error = 0.0
+Learned classification forest model:
+RandomForestClassificationModel (uid=rfc_1b92a2b3d9fe) with 10 trees
+  Tree 0 (weight 1.0):
+    If (feature 385 <= 0.0)
+     If (feature 206 <= 0.0)
+      If (feature 360 <= 0.0)
+       Predict: 0.0
+      Else (feature 360 > 0.0)
+       Predict: 1.0
+     Else (feature 206 > 0.0)
+      Predict: 1.0
+    Else (feature 385 > 0.0)
+     Predict: 1.0
+  Tree 1 (weight 1.0):
+    If (feature 462 <= 0.0)
+     If (feature 429 <= 0.0)
+      If (feature 296 <= 0.0)
+       Predict: 1.0
+      Else (feature 296 > 0.0)
+       Predict: 0.0
+     Else (feature 429 > 0.0)
+      Predict: 1.0
+    Else (feature 462 > 0.0)
+     Predict: 0.0
+  Tree 2 (weight 1.0):
+    If (feature 512 <= 0.0)
+     Predict: 0.0
+    Else (feature 512 > 0.0)
+     Predict: 1.0
+  Tree 3 (weight 1.0):
+    If (feature 512 <= 0.0)
+     If (feature 523 <= 31.0)
+      Predict: 0.0
+     Else (feature 523 > 31.0)
+      If (feature 578 <= 151.0)
+       Predict: 1.0
+      Else (feature 578 > 151.0)
+       Predict: 0.0
+    Else (feature 512 > 0.0)
+     Predict: 1.0
+  Tree 4 (weight 1.0):
+    If (feature 462 <= 0.0)
+     If (feature 240 <= 253.0)
+      Predict: 1.0
+     Else (feature 240 > 253.0)
+      Predict: 0.0
+    Else (feature 462 > 0.0)
+     Predict: 0.0
+  Tree 5 (weight 1.0):
+    If (feature 429 <= 0.0)
+     If (feature 462 <= 0.0)
+      Predict: 1.0
+     Else (feature 462 > 0.0)
+      Predict: 0.0
+    Else (feature 429 > 0.0)
+     Predict: 1.0
+  Tree 6 (weight 1.0):
+    If (feature 518 <= 0.0)
+     If (feature 405 <= 103.0)
+      Predict: 1.0
+     Else (feature 405 > 103.0)
+      Predict: 0.0
+    Else (feature 518 > 0.0)
+     If (feature 156 <= 244.0)
+      If (feature 489 <= 0.0)
+       Predict: 1.0
+      Else (feature 489 > 0.0)
+       Predict: 0.0
+     Else (feature 156 > 244.0)
+      Predict: 1.0
+  Tree 7 (weight 1.0):
+    If (feature 540 <= 65.0)
+     If (feature 510 <= 0.0)
+      Predict: 0.0
+     Else (feature 510 > 0.0)
+      Predict: 1.0
+    Else (feature 540 > 65.0)
+     Predict: 1.0
+  Tree 8 (weight 1.0):
+    If (feature 463 <= 0.0)
+     If (feature 598 <= 0.0)
+      If (feature 346 <= 0.0)
+       Predict: 0.0
+      Else (feature 346 > 0.0)
+       Predict: 1.0
+     Else (feature 598 > 0.0)
+      Predict: 1.0
+    Else (feature 463 > 0.0)
+     Predict: 0.0
+  Tree 9 (weight 1.0):
+    If (feature 510 <= 0.0)
+     If (feature 517 <= 0.0)
+      If (feature 490 <= 0.0)
+       Predict: 1.0
+      Else (feature 490 > 0.0)
+       Predict: 0.0
+     Else (feature 517 > 0.0)
+      Predict: 0.0
+    Else (feature 510 > 0.0)
+     Predict: 1.0
+```
+
+#### 25 Gradient-boosted 树分类示例: [GradientBoostedTreeClassifierExample](/src/main/scala/org/apache/spark/examples/ml/classification/GradientBoostedTreeClassifierExample.scala)
+
+Gradient-boosted trees(GBTs) 是一种非常 popular 的分类和回归方法，具体可以参见一些资料: [Gradient_boosting](https://en.wikipedia.org/wiki/Gradient_boosting)
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.classification.GradientBoostedTreeClassifierExample \
+                                       --master yarn \
+                                       --deploy-mode cluster \
+                                       --driver-cores 1 \
+                                       --driver-memory 1024M \
+                                       --num-executors 4 \
+                                       --executor-cores 2 \
+                                       --executor-memory 4096M \
+                                       spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /user/qifeng.dai/input/sample_libsvm_data.txt
+
+# 结果如下
++--------------+-----+--------------------+
+|predictedLabel|label|            features|
++--------------+-----+--------------------+
+|           1.0|  1.0|(692,[158,159,160...|
+|           1.0|  1.0|(692,[124,125,126...|
+|           1.0|  1.0|(692,[151,152,153...|
+|           1.0|  0.0|(692,[129,130,131...|
+|           1.0|  1.0|(692,[158,159,160...|
++--------------+-----+--------------------+
+only showing top 5 rows
+
+Test Error = 0.08108108108108103
+Learned classification GBT model:
+GBTClassificationModel (uid=gbtc_6a4d82be3417) with 10 trees
+  Tree 0 (weight 1.0):
+    If (feature 351 <= 15.0)
+     If (feature 350 <= 225.0)
+      Predict: 1.0
+     Else (feature 350 > 225.0)
+      Predict: -1.0
+    Else (feature 351 > 15.0)
+     Predict: -1.0
+  Tree 1 (weight 0.1):
+    If (feature 434 <= 0.0)
+     If (feature 379 <= 0.0)
+      Predict: 0.47681168808847024
+     Else (feature 379 > 0.0)
+      Predict: -0.4768116880884694
+    Else (feature 434 > 0.0)
+     Predict: -0.4768116880884701
+  Tree 2 (weight 0.1):
+    If (feature 434 <= 0.0)
+     If (feature 379 <= 0.0)
+      Predict: 0.4381935810427206
+     Else (feature 379 > 0.0)
+      Predict: -0.43819358104271977
+    Else (feature 434 > 0.0)
+     If (feature 212 <= 0.0)
+      If (feature 123 <= 29.0)
+       Predict: -0.4381935810427206
+      Else (feature 123 > 29.0)
+       Predict: -0.4381935810427205
+     Else (feature 212 > 0.0)
+      Predict: -0.4381935810427207
+  Tree 3 (weight 0.1):
+    If (feature 490 <= 31.0)
+     If (feature 323 <= 198.0)
+      If (feature 602 <= 0.0)
+       If (feature 155 <= 0.0)
+        Predict: 0.4051496802845983
+       Else (feature 155 > 0.0)
+        Predict: 0.4051496802845984
+      Else (feature 602 > 0.0)
+       Predict: 0.4051496802845983
+     Else (feature 323 > 198.0)
+      Predict: -0.4051496802845982
+    Else (feature 490 > 31.0)
+     Predict: -0.4051496802845983
+  Tree 4 (weight 0.1):
+    If (feature 490 <= 31.0)
+     If (feature 100 <= 165.0)
+      If (feature 235 <= 37.0)
+       If (feature 183 <= 0.0)
+        Predict: 0.3765841318352991
+       Else (feature 183 > 0.0)
+        If (feature 183 <= 86.0)
+         Predict: 0.3765841318352991
+        Else (feature 183 > 86.0)
+         Predict: 0.37658413183529915
+      Else (feature 235 > 37.0)
+       Predict: 0.3765841318352993
+     Else (feature 100 > 165.0)
+      Predict: -0.3765841318352994
+    Else (feature 490 > 31.0)
+     Predict: -0.3765841318352992
+  Tree 5 (weight 0.1):
+    If (feature 407 <= 0.0)
+     If (feature 568 <= 0.0)
+      Predict: -0.35166478958101005
+     Else (feature 568 > 0.0)
+      If (feature 209 <= 141.0)
+       If (feature 157 <= 86.0)
+        Predict: 0.35166478958101005
+       Else (feature 157 > 86.0)
+        Predict: 0.35166478958101005
+      Else (feature 209 > 141.0)
+       Predict: 0.3516647895810101
+    Else (feature 407 > 0.0)
+     Predict: -0.35166478958100994
+  Tree 6 (weight 0.1):
+    If (feature 407 <= 0.0)
+     If (feature 568 <= 0.0)
+      Predict: -0.32974984655529926
+     Else (feature 568 > 0.0)
+      If (feature 579 <= 27.0)
+       Predict: 0.32974984655529926
+      Else (feature 579 > 27.0)
+       Predict: 0.3297498465552993
+    Else (feature 407 > 0.0)
+     If (feature 460 <= 24.0)
+      Predict: -0.32974984655529926
+     Else (feature 460 > 24.0)
+      Predict: -0.3297498465552993
+  Tree 7 (weight 0.1):
+    If (feature 434 <= 0.0)
+     If (feature 549 <= 253.0)
+      If (feature 133 in {1.0})
+       Predict: 0.3103372455197956
+      Else (feature 133 not in {1.0})
+       Predict: 0.31033724551979563
+     Else (feature 549 > 253.0)
+      Predict: -0.31033724551979525
+    Else (feature 434 > 0.0)
+     If (feature 407 <= 0.0)
+      Predict: -0.3103372455197956
+     Else (feature 407 > 0.0)
+      Predict: -0.31033724551979563
+  Tree 8 (weight 0.1):
+    If (feature 434 <= 0.0)
+     If (feature 568 <= 253.0)
+      If (feature 155 <= 0.0)
+       Predict: 0.2930291649125433
+      Else (feature 155 > 0.0)
+       If (feature 156 <= 242.0)
+        If (feature 95 in {0.0})
+         Predict: 0.2930291649125433
+        Else (feature 95 not in {0.0})
+         Predict: 0.2930291649125434
+       Else (feature 156 > 242.0)
+        Predict: 0.2930291649125434
+     Else (feature 568 > 253.0)
+      Predict: -0.29302916491254294
+    Else (feature 434 > 0.0)
+     If (feature 378 <= 110.0)
+      Predict: -0.2930291649125433
+     Else (feature 378 > 110.0)
+      If (feature 379 <= 168.0)
+       If (feature 97 in {0.0})
+        Predict: -0.2930291649125433
+       Else (feature 97 not in {0.0})
+        Predict: -0.2930291649125434
+      Else (feature 379 > 168.0)
+       Predict: -0.2930291649125434
+  Tree 9 (weight 0.1):
+    If (feature 462 <= 0.0)
+     If (feature 268 <= 253.0)
+      If (feature 133 in {1.0})
+       Predict: 0.27750666438358246
+      Else (feature 133 not in {1.0})
+       Predict: 0.27750666438358257
+     Else (feature 268 > 253.0)
+      Predict: -0.27750666438358174
+    Else (feature 462 > 0.0)
+     If (feature 239 <= 0.0)
+      Predict: -0.27750666438358246
+     Else (feature 239 > 0.0)
+      Predict: -0.27750666438358257
+```
+
+#### 26 多层感知机分类算法的示例: [MultilayerPerceptronClassifierExample](/src/main/scala/org/apache/spark/examples/ml/classification/MultilayerPerceptronClassifierExample.scala)
+
+多层感知机分类算法是一种神经网络的算法，这种算法提出的时间应该算是非常久了，具体可以参见一些资料: [mlp](http://deeplearning.net/tutorial/mlp.html)
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.classification.MultilayerPerceptronClassifierExample \
+                                       --master yarn \
+                                       --deploy-mode cluster \
+                                       --driver-cores 1 \
+                                       --driver-memory 1024M \
+                                       --num-executors 4 \
+                                       --executor-cores 2 \
+                                       --executor-memory 4096M \
+                                       spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar /user/qifeng.dai/input/sample_multiclass_classification_data.txt
+
+# 结果如下
+Precision:0.9444444444444444
+```
+
+#### 27 One-vs-Rest 分类器示例: [OneVsRestExample](/src/main/scala/org/apache/spark/examples/ml/classification/OneVsRestExample.scala)
+
+代码提交方式如下：
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.ml.classification.OneVsRestExample \
+                                       --master yarn \
+                                       --deploy-mode cluster \
+                                       --driver-cores 1 \
+                                       --driver-memory 1024M \
+                                       --num-executors 4 \
+                                       --executor-cores 2 \
+                                       --executor-memory 4096M \
+                                       spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar \
+                                       --input /user/qifeng.dai/input/sample_libsvm_data.txt --fracTest 0.4
+
+# 结果如下
+ Training Time 12 sec
+
+ Prediction Time 0 sec
+
+ Confusion Matrix
+ 21.0  0.0
+0.0   20.0
+
+label	fpr
+0	0.0
+1	0.0
+```
 
 === Regression ===
 
