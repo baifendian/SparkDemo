@@ -321,7 +321,3 @@ $ spark-submit --class org.apache.spark.examples.streaming.JavaSqlNetworkWordCou
                                         --executor-memory 4096M \
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar 172.18.1.22 9999
 ```
-
-
-
-

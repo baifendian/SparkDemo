@@ -2354,17 +2354,6 @@ LDA 实现为一个 Estimator，支持 EMLDAOptimizer， OnlineLDAOptimizer，�
 +---------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
 
-=== In Practice ===
-
-#### 35 
-
-
-#### 36 
-
-
-#### 37
-
-
 ### 示例11. GraphX 使用示例
 
 图是一个比较宽泛的主题，关于图以及相关的应用，用户可以参考一些资料，包括 Danai Koutra 教授的 "Node and Graph Similarity: Theory and Applications", Google 的论文 [Pregel](https://www.google.com.sg/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&ved=0ahUKEwj-y7Cok8TLAhVLmJQKHe9vDpgQFggdMAA&url=https%3A%2F%2Fkowshik.github.io%2FJPregel%2Fpregel_paper.pdf&usg=AFQjCNFhxY3UjAhPdZIEk51P6ACPOormtA) 等都是非常经典的文献 。
@@ -2448,4 +2437,63 @@ Triangle Counting: 三角计算是非常有意思的，它是要解决这种问�
                                         --executor-memory 4096M \
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar triangles /user/qifeng.dai/input/web-Google.txt \
                                         --numEPart=20 --partStrategy=EdgePartition2D
+```
+
+=== In Practice ===
+
+### 示例12. 综合实战
+
+本篇注重实战, 结合一些实际的场景给出具体的解决方案.
+
+#### 1 数据从 kafka => hdfs 示例: [Kafka2Hdfs](/src/main/scala/org/apache/spark/examples/practice/Kafka2Hdfs.scala)
+
+本示例主要介绍从 kafka 将数据实时同步到 hdfs, 注意数据的同步是按照天分区, 每天的文件又是按照小时来进行分文件存放的. 除了存放数据, 该程序还会将实时统计的一些信息写入到 Redis.
+
+该程序还展示了如何读取配置文件的信息.
+
+代码提交方式如下:
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.practice.Kafka2Hdfs \
+                                        --master yarn \
+                                        --deploy-mode cluster \
+                                        --driver-cores 1 \
+                                        --driver-memory 4096M \
+                                        --num-executors 4 \
+                                        --executor-cores 2 \
+                                        --executor-memory 2048M \
+                                        --files conf.properties#props \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar props
+
+# 我们在 hdfs 中查看到:
+
+
+# 我们在 redis 中查看到:
+
+
+```
+
+#### 2 文本挖掘示例: [](/src/main/scala/org/apache/spark/examples/practice/.scala)
+
+这里介绍一下文本分类的实际案例, 数据样本来自 [baifendian](http://www.baifendian.com/) 电商数据, 训练之后, 我们会对未分类的数据进行分类, 分类结果存放在 redis 中保存.
+
+代码提交方式如下:
+
+```
+# 训练
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.practice. \
+                                        --master yarn \
+                                        --deploy-mode cluster \
+                                        --driver-cores 1 \
+                                        --driver-memory 4096M \
+                                        --num-executors 4 \
+                                        --executor-cores 2 \
+                                        --executor-memory 2048M \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
+
+# 测试
+
+# 我们在 redis 中查看:
+
+
 ```
