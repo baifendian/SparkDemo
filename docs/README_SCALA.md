@@ -2449,7 +2449,7 @@ Triangle Counting: 三角计算是非常有意思的，它是要解决这种问�
 
 本示例主要介绍从 kafka 将数据实时同步到 hdfs, 注意数据的同步是按照天分区, 每天的文件又是按照小时来进行分文件的.
 
-该程序还展示了如何读取配置文件的信息, 注意这里的 props 是固定的, 代码就是根据这个来解析的
+该程序还展示了如何读取配置文件的信息, 注意这里的 props 是固定的, 代码就是根据这个来解析的.
 
 代码提交方式如下:
 
@@ -2459,9 +2459,9 @@ Triangle Counting: 三角计算是非常有意思的，它是要解决这种问�
                                         --deploy-mode cluster \
                                         --driver-cores 1 \
                                         --driver-memory 4096M \
-                                        --num-executors 4 \
+                                        --num-executors 3 \
                                         --executor-cores 2 \
-                                        --executor-memory 2048M \
+                                        --executor-memory 1024M \
                                         --files conf.properties#props \
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
 
@@ -2472,7 +2472,7 @@ Triangle Counting: 三角计算是非常有意思的，它是要解决这种问�
 读者可能对于这个程序关注两点:
 
 * driver 或者是 worker 挂掉, 程序能否正常的运行 --
-* 读取的 kafka 数据是否是一致的, 数据首先是不能少 --
+* 读取的 kafka 数据是否是一致的, 没有数据丢失 --
 * kafka 如果没有数据, 或者有数据, 程序能否正常的一直运行 -- OK
 
 #### 2 文本挖掘示例: [](/src/main/scala/org/apache/spark/examples/practice/.scala)

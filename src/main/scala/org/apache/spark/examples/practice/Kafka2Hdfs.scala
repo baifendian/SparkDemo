@@ -19,10 +19,10 @@ import java.io.{File, FileInputStream}
 import java.text.SimpleDateFormat
 import java.util.{Date, Properties}
 
-import kafka.serializer.StringDecoder
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataOutputStream, FileSystem, Path}
 import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -30,12 +30,18 @@ import org.apache.spark.{SparkConf, SparkContext}
 // 参数的 key 值
 object Params {
   // kafka params
-  val BROKERS = "brokers"
+  val ZK = "zookeeper"
+  val GROUP = "groupid"
   val TOPICS = "topics"
+
   // hdfs params
   val HDFS_PATH = "hdfs.path"
+
   // hdfs flush interval
   val FLUSH_INTERVAL = "flushinterval"
+
+  // flush every write
+  val FLUSH_EVERY_WRITE = "flusheverywrite"
 }
 
 // 配置文件的广播变量, 这里使用了单件模式, 为了避免 driver 挂掉
@@ -70,6 +76,8 @@ object HdfsConnection {
   var currentPath: String = null
   // flush interval
   var flushInterval: Long = 0L
+  // flush every write
+  var flushEveryWrite: Option[Boolean] = None
 
   // hdfs 的写入句柄, 注意多线程问题, 第一个参数是写入句柄, 第二个参数是最近 sync 的时间, 第三个参数是当前的小时情况
   val writeHandler: ThreadLocal[(FSDataOutputStream, Long, String)] = new ThreadLocal[(FSDataOutputStream, Long, String)] {
@@ -108,7 +116,7 @@ object HdfsConnection {
 
       // 获取刷新周期
       if (flushInterval <= 0) {
-        flushInterval = props.getProperty("flushinterval") toLong
+        flushInterval = props.getProperty(Params.FLUSH_INTERVAL) toLong
       }
 
       // 获取句柄, 以及当前存储的时间
@@ -125,7 +133,7 @@ object HdfsConnection {
         println(s"create file: $newPath")
         val fout: FSDataOutputStream = fileSystem.create(newPath)
 
-        writeHandler.set((fout, System.currentTimeMillis() , nowHour))
+        writeHandler.set((fout, System.currentTimeMillis(), nowHour))
       }
 
       // 返回最新的句柄和上次的刷新时间
@@ -133,11 +141,16 @@ object HdfsConnection {
       val t = writeHandler.get()._2
 
       // 如果超过时限, 则会进行强制 sync
-      if (System.currentTimeMillis() - t >= (flushInterval * 1000)) {
-        println(s"force sync, ${new Date()}")
-        newHandler.hsync()
-
-        writeHandler.set((newHandler, System.currentTimeMillis() , nowHour))
+      flushEveryWrite match {
+        case Some(true) => newHandler.hflush()
+        case Some(false) => {
+          if (System.currentTimeMillis() - t >= (flushInterval * 1000)) {
+            println(s"force sync, ${new Date()}")
+            newHandler.hsync()
+            writeHandler.set((newHandler, System.currentTimeMillis(), nowHour))
+          }
+        }
+        case _ => flushEveryWrite = Some(props.getProperty(Params.FLUSH_EVERY_WRITE) toBoolean)
       }
 
       newHandler
@@ -147,36 +160,33 @@ object HdfsConnection {
 
 object Kafka2Hdfs {
   def main(args: Array[String]) {
-    /* 加载配置文件, 配置文件示例为:
-     *
-     * brokers=ip1:port1,ip2:port2
-     * topics=topic1,topic2,...
-     *
-     * hdfs.path=xxx
-     *
-     * flushinterval=120
-     */
+    // 加载配置文件, 配置文件示例为: conf.properties
     // 设置 spark Config, 注意下面我们用的是 direct stream 方式, 因此是不需要 write ahead log 的.
     val sparkConf = new SparkConf().setAppName("Kafka2Hdfs").
+      set("spark.streaming.receiver.writeAheadLog.enable", "true").
       set("spark.streaming.kafka.maxRatePerPartition", "1000")
 
     // 创建 spark context 和 streaming context, 注意这里也设置了 checkpoint, 目的用于 stream 的状态回复
     val ctx = new SparkContext(sparkConf)
-    val ssc = new StreamingContext(ctx, Seconds(5))
-
+    val ssc = new StreamingContext(ctx, Seconds(10))
     ssc.checkpoint("checkpoint")
 
     // 创建 kafka stream
     val topics = BroadConfig.getInstance(ctx).value.getProperty(Params.TOPICS)
-    val brokers = BroadConfig.getInstance(ctx).value.getProperty(Params.BROKERS)
+    val zk = BroadConfig.getInstance(ctx).value.getProperty(Params.ZK)
+    val group = BroadConfig.getInstance(ctx).value.getProperty(Params.GROUP)
 
-    println(s"topics: $topics, brokers: $brokers")
+    println(s"topics: $topics, zookeeper: $zk, group id: $group")
 
     // 注意这里也没有设置 Parallelism, 这是因为 Direct Stream 方式有简单的并行性, 即 "many RDD partitions as there are Kafka partitions".
-    val topicsSet = topics.split(",").toSet
-    val kafkaParams = Map[String, String]("metadata.broker.list" -> brokers, "auto.offset.reset" -> "smallest")
-    val messages = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
-      ssc, kafkaParams, topicsSet)
+    //    val topicsSet = topics.split(",").toSet
+    //    val kafkaParams = Map[String, String]("metadata.broker.list" -> brokers, "auto.offset.reset" -> "smallest")
+    //    val messages = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
+    //      ssc, kafkaParams, topicsSet)
+
+    // 注意这里是 receiver 方式
+    val topicMap = topics.split(",").map((_, 3)).toMap
+    val messages = KafkaUtils.createStream(ssc, zk, group, topicMap, StorageLevel.MEMORY_AND_DISK_SER)
 
     val hdfsPath = BroadConfig.getInstance(ctx).value.getProperty(Params.HDFS_PATH)
 
