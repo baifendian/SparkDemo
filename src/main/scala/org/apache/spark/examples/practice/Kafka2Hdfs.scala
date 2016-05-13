@@ -136,6 +136,8 @@ object HdfsConnection {
       if (System.currentTimeMillis() - t >= (flushInterval * 1000)) {
         println(s"force sync, ${new Date()}")
         newHandler.hsync()
+
+        writeHandler.set((newHandler, System.currentTimeMillis() , nowHour))
       }
 
       newHandler
