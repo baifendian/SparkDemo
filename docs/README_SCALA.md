@@ -2458,7 +2458,7 @@ Triangle Counting: 三角计算是非常有意思的，它是要解决这种问�
                                         --master yarn \
                                         --deploy-mode cluster \
                                         --driver-cores 1 \
-                                        --driver-memory 4096M \
+                                        --driver-memory 1024M \
                                         --num-executors 3 \
                                         --executor-cores 2 \
                                         --executor-memory 1024M \
@@ -2466,13 +2466,18 @@ Triangle Counting: 三角计算是非常有意思的，它是要解决这种问�
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
 
 # 我们在 hdfs 中查看到:
-
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ hadoop fs -ls output/kafka2hdfs/2016-05-13
+Found 4 items
+-rw-r--r--   3 qifeng.dai supergroup         49 2016-05-13 16:49 output/kafka2hdfs/2016-05-13/11fd0836-5d0e-4583-a56f-56158b1dc3b2-2016-05-13-16
+-rw-r--r--   3 qifeng.dai supergroup    4178700 2016-05-13 16:44 output/kafka2hdfs/2016-05-13/23bf1b88-ce6d-4165-a820-25afb9edbb1b-2016-05-13-16
+-rw-r--r--   3 qifeng.dai supergroup       1200 2016-05-13 16:51 output/kafka2hdfs/2016-05-13/622d7518-155f-4d25-9073-b0c430360bb5-2016-05-13-16
+-rw-r--r--   3 qifeng.dai supergroup      16236 2016-05-13 16:46 output/kafka2hdfs/2016-05-13/dfbddb4d-1ed8-4e22-9cdc-e0cab3ae9c31-2016-05-13-16
 ```
 
 读者可能对于这个程序关注两点:
 
-* driver 或者是 worker 挂掉, 程序能否正常的运行 --
-* 读取的 kafka 数据是否是一致的, 没有数据丢失 --
+* driver 或者是 worker 挂掉, 程序能否正常的运行 -- OK
+* 读取的 kafka 数据是否是一致的, 没有数据丢失 -- OK
 * kafka 如果没有数据, 或者有数据, 程序能否正常的一直运行 -- OK
 
 #### 2 文本挖掘示例: [](/src/main/scala/org/apache/spark/examples/practice/.scala)

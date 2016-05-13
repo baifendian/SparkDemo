@@ -185,7 +185,7 @@ object Kafka2Hdfs {
     //      ssc, kafkaParams, topicsSet)
 
     // 注意这里是 receiver 方式
-    val topicMap = topics.split(",").map((_, 3)).toMap
+    val topicMap = topics.split(",").map((_, 1)).toMap
     val messages = KafkaUtils.createStream(ssc, zk, group, topicMap, StorageLevel.MEMORY_AND_DISK_SER)
 
     val hdfsPath = BroadConfig.getInstance(ctx).value.getProperty(Params.HDFS_PATH)
