@@ -37,12 +37,6 @@ object Params {
 
   // hdfs params
   val HDFS_PATH = "hdfs.path"
-
-  // hdfs flush interval
-  val FLUSH_INTERVAL = "flushinterval"
-
-  // flush every write
-  val FLUSH_EVERY_WRITE = "flusheverywrite"
 }
 
 // 配置文件的广播变量, 这里使用了单件模式, 为了避免 driver 挂掉
@@ -75,15 +69,11 @@ object HdfsConnection {
   var currentDay: String = null
   // the directory of hdfs path
   var currentPath: String = null
-  // flush interval
-  var flushInterval: Long = 0L
-  // flush every write
-  var flushEveryWrite: Option[Boolean] = None
 
-  // hdfs 的写入句柄, 注意多线程问题, 第一个参数是写入句柄, 第二个参数是最近 sync 的时间, 第三个参数是当前的小时情况
-  val writeHandler: ThreadLocal[(FSDataOutputStream, Long, String)] = new ThreadLocal[(FSDataOutputStream, Long, String)] {
-    override def initialValue(): (FSDataOutputStream, Long, String) =
-      (null, 0, null)
+  // hdfs 的写入句柄, 注意多线程问题, 第一个参数是写入句柄, 第二个参数是当前的小时情况
+  val writeHandler: ThreadLocal[(FSDataOutputStream, String)] = new ThreadLocal[(FSDataOutputStream, String)] {
+    override def initialValue(): (FSDataOutputStream, String) =
+      (null, null)
   }
 
   // 获取 hdfs 的连接
@@ -117,7 +107,7 @@ object HdfsConnection {
 
       // 获取句柄, 以及当前存储的时间
       val handler = writeHandler.get()._1
-      val hour = writeHandler.get()._3
+      val hour = writeHandler.get()._2
 
       // 如果 "小时" 已经过时, 也创建一个文件
       if (hour == null || hour != nowHour) {
@@ -129,30 +119,11 @@ object HdfsConnection {
         println(s"create file: $newPath")
         val fout: FSDataOutputStream = fileSystem.create(newPath)
 
-        writeHandler.set((fout, System.currentTimeMillis(), nowHour))
+        writeHandler.set((fout, nowHour))
       }
 
-      // 返回最新的句柄和上次的刷新时间
+      // 返回最新的句柄
       val newHandler = writeHandler.get()._1
-      val t = writeHandler.get()._2
-
-      // flush or sync
-      flushEveryWrite match {
-        case Some(true) => newHandler.hflush() // 如果是强制刷新则进行刷新
-        case Some(false) => {
-          // 获取刷新周期
-          if (flushInterval <= 0) {
-            flushInterval = props.getProperty(Params.FLUSH_INTERVAL) toLong
-          }
-          // 到了刷新周期则进行刷新
-          if (System.currentTimeMillis() - t >= (flushInterval * 1000)) {
-            println(s"force sync, ${new Date()}")
-            newHandler.hsync()
-            writeHandler.set((newHandler, System.currentTimeMillis(), nowHour))
-          }
-        }
-        case _ => flushEveryWrite = Some(props.getProperty(Params.FLUSH_EVERY_WRITE) toBoolean)
-      }
 
       newHandler
     }
@@ -167,7 +138,7 @@ object Kafka2Hdfs {
       set("spark.streaming.receiver.writeAheadLog.enable", "true").
       set("spark.streaming.kafka.maxRatePerPartition", "1000")
 
-    // 创建 spark context 和 streaming context, 注意这里也设置了 checkpoint, 目的用于 stream 的状态回复
+    // 创建 spark context 和 streaming context, 注意这里也设置了 checkpoint, 目的用于 stream 的状态恢复
     val ctx = new SparkContext(sparkConf)
     val ssc = new StreamingContext(ctx, Seconds(10))
     ssc.checkpoint("checkpoint")
@@ -194,10 +165,6 @@ object Kafka2Hdfs {
 
     println(s"hdfs path: $hdfsPath")
 
-    val flushinterval = BroadConfig.getInstance(ctx).value.getProperty("flushinterval")
-
-    println(s"flush interval: $flushinterval")
-
     // 对我们获取的数据, 进行处理, 保存到 hdfs 中
     messages.map(x => x._2).foreachRDD { rdd =>
       // only can be execution on driver
@@ -212,6 +179,12 @@ object Kafka2Hdfs {
               connection.writeBytes("\n")
             }
           )
+          // 每次完了之后进行 flush
+          try {
+            connection.hflush()
+          } catch {
+            case e: Exception => println(s"hflush exception: ${e.getMessage}")
+          }
       }
     }
 
