@@ -784,12 +784,18 @@ Triangle Counting: 三角计算是非常有意思的，它是要解决这种问�
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
 
 # 我们在 hdfs 中查看到:
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ hadoop fs -ls output/kafka2hdfs/2016-05-13
-Found 4 items
--rw-r--r--   3 qifeng.dai supergroup         49 2016-05-13 16:49 output/kafka2hdfs/2016-05-13/11fd0836-5d0e-4583-a56f-56158b1dc3b2-2016-05-13-16
--rw-r--r--   3 qifeng.dai supergroup    4178700 2016-05-13 16:44 output/kafka2hdfs/2016-05-13/23bf1b88-ce6d-4165-a820-25afb9edbb1b-2016-05-13-16
--rw-r--r--   3 qifeng.dai supergroup       1200 2016-05-13 16:51 output/kafka2hdfs/2016-05-13/622d7518-155f-4d25-9073-b0c430360bb5-2016-05-13-16
--rw-r--r--   3 qifeng.dai supergroup      16236 2016-05-13 16:46 output/kafka2hdfs/2016-05-13/dfbddb4d-1ed8-4e22-9cdc-e0cab3ae9c31-2016-05-13-16
+[qifeng.dai@bgsbtsp0006-dqf ~]$ hadoop fs -ls output/kafka2hdfs/2016-05-16
+Found 10 items
+-rw-r--r--   3 qifeng.dai supergroup      15720 2016-05-16 16:00 output/kafka2hdfs/2016-05-16/00a0b1e8-2fb4-409e-a392-3d441821b6fe-2016-05-16-15
+-rw-r--r--   3 qifeng.dai supergroup  459134249 2016-05-16 16:00 output/kafka2hdfs/2016-05-16/035d9570-600c-4d71-ad85-adb19330d120-2016-05-16-16
+-rw-r--r--   3 qifeng.dai supergroup         36 2016-05-16 16:00 output/kafka2hdfs/2016-05-16/2db2e592-8db5-4a59-afd8-b7ee583e509c-2016-05-16-16
+-rw-r--r--   3 qifeng.dai supergroup         36 2016-05-16 16:29 output/kafka2hdfs/2016-05-16/5fc11879-7342-42e0-858c-6a77c2e2d100-2016-05-16-16
+-rw-r--r--   3 qifeng.dai supergroup     164904 2016-05-16 16:00 output/kafka2hdfs/2016-05-16/69c49983-50c2-448b-ace0-ca7cf9ffce9e-2016-05-16-15
+-rw-r--r--   3 qifeng.dai supergroup   78231653 2016-05-16 16:03 output/kafka2hdfs/2016-05-16/6c65c42b-400b-4f81-84d9-42118590fd9d-2016-05-16-16
+-rw-r--r--   3 qifeng.dai supergroup      15864 2016-05-16 16:00 output/kafka2hdfs/2016-05-16/a276487b-901b-483d-9007-d5f56b19ad51-2016-05-16-15
+-rw-r--r--   3 qifeng.dai supergroup  419260704 2016-05-16 16:03 output/kafka2hdfs/2016-05-16/c27f5980-cecb-47f0-8218-bc94fcb4b9c5-2016-05-16-16
+-rw-r--r--   3 qifeng.dai supergroup  148229224 2016-05-16 16:03 output/kafka2hdfs/2016-05-16/e6b2cdcb-717d-43b1-92a2-a199fcb41288-2016-05-16-16
+-rw-r--r--   3 qifeng.dai supergroup    1503506 2016-05-16 16:03 output/kafka2hdfs/2016-05-16/e73320be-a478-42ae-bf03-ffe5fc89609f-2016-05-16-16
 ```
 
 读者可能对于这个程序关注两点:
