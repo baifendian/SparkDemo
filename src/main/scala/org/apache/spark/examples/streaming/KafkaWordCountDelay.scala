@@ -1,18 +1,18 @@
 /**
- * Copyright (C) 2015 Baifendian Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+  * Copyright (C) 2015 Baifendian Corporation
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 package org.apache.spark.examples.streaming
 
 import java.util
@@ -87,10 +87,9 @@ object KafkaWordCountProducerBatch {
     // Send some messages
     val startTime = System.currentTimeMillis()
 
-    var sendMsg = 0L
-
     // 持续发送一段时间，是不是要爆了
-    while ((System.currentTimeMillis() - startTime) <= durationSeconds.toInt * 1000) {
+    //while ((System.currentTimeMillis() - startTime) <= durationSeconds.toInt * 1000) {
+    for (i <- 1 to durationSeconds.toInt) {
       (1 to messagesPerSec.toInt).foreach { messageNum =>
         val str = (1 to wordsPerMessage.toInt).mkString(" ")
 
@@ -98,11 +97,7 @@ object KafkaWordCountProducerBatch {
         producer.send(message)
       }
 
-      sendMsg += messagesPerSec.toInt
-
       Thread.sleep(1000)
     }
-
-    println(s"send message number: $sendMsg")
   }
 }
