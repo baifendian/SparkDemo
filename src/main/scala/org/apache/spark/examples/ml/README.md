@@ -13,7 +13,7 @@ spark.ml 的相关示例：
 
 === Overview: estimators, transformers and pipelines ===
 
-#### 1 逻辑回归的例子: [LogisticRegExample](/src/main/scala/org/apache/spark/examples/ml/LogisticRegExample.scala)
+### 1 逻辑回归的例子: [LogisticRegExample](/src/main/scala/org/apache/spark/examples/ml/LogisticRegExample.scala)
 
 该示例主要展示了 Estimator, Transformer, Param 的概念和用法，是一个最基本的应用 spark 构建机器学习样例的例子。
 
