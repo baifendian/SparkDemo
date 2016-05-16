@@ -87,6 +87,8 @@ object KafkaWordCountProducerBatch {
     // Send some messages
     val startTime = System.currentTimeMillis()
 
+    var sendMsg = 0L
+
     // 持续发送一段时间，是不是要爆了
     while ((System.currentTimeMillis() - startTime) <= durationSeconds.toInt * 1000) {
       (1 to messagesPerSec.toInt).foreach { messageNum =>
@@ -96,7 +98,11 @@ object KafkaWordCountProducerBatch {
         producer.send(message)
       }
 
+      sendMsg += messagesPerSec.toInt
+
       Thread.sleep(1000)
     }
+
+    println(s"send message number: $sendMsg")
   }
 }
