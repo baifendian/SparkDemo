@@ -2458,10 +2458,10 @@ Triangle Counting: 三角计算是非常有意思的，它是要解决这种问�
                                         --master yarn \
                                         --deploy-mode cluster \
                                         --driver-cores 1 \
-                                        --driver-memory 1024M \
+                                        --driver-memory 512M \
                                         --num-executors 3 \
                                         --executor-cores 2 \
-                                        --executor-memory 1024M \
+                                        --executor-memory 512M \
                                         --files conf.properties#props \
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
 
