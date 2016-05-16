@@ -136,7 +136,9 @@ object Kafka2Hdfs {
     // 设置 spark Config, 注意下面我们用的是 direct stream 方式, 因此是不需要 write ahead log 的.
     val sparkConf = new SparkConf().setAppName("Kafka2Hdfs").
       set("spark.streaming.receiver.writeAheadLog.enable", "true").
-      set("spark.streaming.kafka.maxRatePerPartition", "1000")
+      set("spark.streaming.receiver.maxRate", "20000").
+      set("spark.streaming.stopGracefullyOnShutdown", "true").
+      set("spark.streaming.kafka.maxRetries", "3")
 
     // 创建 spark context 和 streaming context, 注意这里也设置了 checkpoint, 目的用于 stream 的状态恢复
     val ctx = new SparkContext(sparkConf)
