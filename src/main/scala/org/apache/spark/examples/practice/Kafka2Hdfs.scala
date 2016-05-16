@@ -33,6 +33,7 @@ object Params {
   val ZK = "zookeeper"
   val GROUP = "groupid"
   val TOPICS = "topics"
+  val TOPIC_THREAD = "topic.thread"
 
   // hdfs params
   val HDFS_PATH = "hdfs.path"
@@ -114,11 +115,6 @@ object HdfsConnection {
         }
       }
 
-      // 获取刷新周期
-      if (flushInterval <= 0) {
-        flushInterval = props.getProperty(Params.FLUSH_INTERVAL) toLong
-      }
-
       // 获取句柄, 以及当前存储的时间
       val handler = writeHandler.get()._1
       val hour = writeHandler.get()._3
@@ -140,10 +136,15 @@ object HdfsConnection {
       val newHandler = writeHandler.get()._1
       val t = writeHandler.get()._2
 
-      // 如果超过时限, 则会进行强制 sync
+      // flush or sync
       flushEveryWrite match {
-        case Some(true) => newHandler.hflush()
+        case Some(true) => newHandler.hflush() // 如果是强制刷新则进行刷新
         case Some(false) => {
+          // 获取刷新周期
+          if (flushInterval <= 0) {
+            flushInterval = props.getProperty(Params.FLUSH_INTERVAL) toLong
+          }
+          // 到了刷新周期则进行刷新
           if (System.currentTimeMillis() - t >= (flushInterval * 1000)) {
             println(s"force sync, ${new Date()}")
             newHandler.hsync()
@@ -175,8 +176,9 @@ object Kafka2Hdfs {
     val topics = BroadConfig.getInstance(ctx).value.getProperty(Params.TOPICS)
     val zk = BroadConfig.getInstance(ctx).value.getProperty(Params.ZK)
     val group = BroadConfig.getInstance(ctx).value.getProperty(Params.GROUP)
+    val topicThread = BroadConfig.getInstance(ctx).value.getProperty(Params.TOPIC_THREAD) toInt
 
-    println(s"topics: $topics, zookeeper: $zk, group id: $group")
+    println(s"topics: $topics, zookeeper: $zk, group id: $group, topic thread: $topicThread")
 
     // 注意这里也没有设置 Parallelism, 这是因为 Direct Stream 方式有简单的并行性, 即 "many RDD partitions as there are Kafka partitions".
     //    val topicsSet = topics.split(",").toSet
@@ -185,7 +187,7 @@ object Kafka2Hdfs {
     //      ssc, kafkaParams, topicsSet)
 
     // 注意这里是 receiver 方式
-    val topicMap = topics.split(",").map((_, 1)).toMap
+    val topicMap = topics.split(",").map((_, topicThread)).toMap
     val messages = KafkaUtils.createStream(ssc, zk, group, topicMap, StorageLevel.MEMORY_AND_DISK_SER)
 
     val hdfsPath = BroadConfig.getInstance(ctx).value.getProperty(Params.HDFS_PATH)
