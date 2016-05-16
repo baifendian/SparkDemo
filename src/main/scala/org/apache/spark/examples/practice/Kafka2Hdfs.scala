@@ -131,9 +131,8 @@ object HdfsConnection {
 }
 
 object Kafka2Hdfs {
-  def main(args: Array[String]) {
+  def functionToCreateContext(): StreamingContext = {
     // 加载配置文件, 配置文件示例为: conf.properties
-    // 设置 spark Config, 注意下面我们用的是 direct stream 方式, 因此是不需要 write ahead log 的.
     val sparkConf = new SparkConf().setAppName("Kafka2Hdfs").
       set("spark.streaming.receiver.writeAheadLog.enable", "true").
       set("spark.streaming.receiver.maxRate", "20000").
@@ -143,7 +142,16 @@ object Kafka2Hdfs {
     // 创建 spark context 和 streaming context, 注意这里也设置了 checkpoint, 目的用于 stream 的状态恢复
     val ctx = new SparkContext(sparkConf)
     val ssc = new StreamingContext(ctx, Seconds(10))
-    ssc.checkpoint("checkpoint")
+
+    ssc.checkpoint("checkpoint/Kafka2Hdfs")
+
+    ssc
+  }
+
+  def main(args: Array[String]) {
+    // 注意我们这里有个 checkpoint 的恢复机制, 应对 driver 的重启(从 metadata 恢复), 另外也可以应对有状态的操作(不过本示例没有)
+    val ssc = StreamingContext.getOrCreate("checkpoint/Kafka2Hdfs", functionToCreateContext _)
+    val ctx = ssc.sparkContext
 
     // 创建 kafka stream
     val topics = BroadConfig.getInstance(ctx).value.getProperty(Params.TOPICS)
@@ -154,6 +162,7 @@ object Kafka2Hdfs {
     println(s"topics: $topics, zookeeper: $zk, group id: $group, topic thread: $topicThread")
 
     // 注意这里也没有设置 Parallelism, 这是因为 Direct Stream 方式有简单的并行性, 即 "many RDD partitions as there are Kafka partitions".
+    // 不过千万要注意, Direct Stream 还处于试验阶段, 慎用啊
     //    val topicsSet = topics.split(",").toSet
     //    val kafkaParams = Map[String, String]("metadata.broker.list" -> brokers, "auto.offset.reset" -> "smallest")
     //    val messages = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
