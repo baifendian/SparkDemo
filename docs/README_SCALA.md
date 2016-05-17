@@ -763,7 +763,7 @@ Triangle Counting: 三角计算是非常有意思的，它是要解决这种问�
 
 本篇注重实战, 结合一些实际的场景给出具体的解决方案.
 
-#### 1 数据从 kafka => hdfs 示例: [Kafka2Hdfs](/src/main/scala/org/apache/spark/examples/practice/Kafka2Hdfs.scala)
+#### 1 数据从 kafka => hdfs 示例: [Kafka2Hdfs](/src/main/scala/org/apache/spark/examples/practice/streaming/Kafka2Hdfs.scala)
 
 本示例主要介绍从 kafka 将数据实时同步到 hdfs, 注意数据的同步是按照天分区, 每天的文件又是按照小时来进行分文件的.
 
@@ -771,10 +771,12 @@ Triangle Counting: 三角计算是非常有意思的，它是要解决这种问�
 
 该程序也展示了如何使用日志, 由于 streaming 是长期运行的程序, 时间久了日志可能会非常大, 因此我们建议 streaming 程序的日志配置文件采用自定义方式.
 
+使用到的相关配置请参考: [相关配置](/src/main/resources/conf)
+
 代码提交方式如下:
 
 ```
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.practice.Kafka2Hdfs \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.practice.streaming.Kafka2Hdfs \
                                         --master yarn \
                                         --deploy-mode cluster \
                                         --driver-cores 1 \
@@ -782,7 +784,7 @@ Triangle Counting: 三角计算是非常有意思的，它是要解决这种问�
                                         --num-executors 3 \
                                         --executor-cores 2 \
                                         --executor-memory 1024M \
-                                        --files conf.properties#props,log4j-streaming.properties \
+                                        --files kafka2hdfs_conf.properties#props,log4j-streaming.properties \
                                         --conf "spark.driver.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
                                         --conf "spark.executor.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
@@ -808,33 +810,54 @@ Found 10 items
 * 读取的 kafka 数据是否是一致的, 没有数据丢失 -- OK
 * kafka 如果没有数据, 或者有数据, 程序能否正常的一直运行 -- OK
 
-#### 2 文本挖掘示例: [TextCategory](/src/main/scala/org/apache/spark/examples/practice/TextCategory.scala)
+#### 2 文本挖掘示例: [TextCategory](/src/main/scala/org/apache/spark/examples/practice/ml/TextCategory.scala)
 
 这里介绍一下文本分类的实际案例, 数据样本来自 [baifendian](http://www.baifendian.com/) 电商数据, 训练之后, 我们会对未分类的数据进行分类, 分类结果存放在 redis 中保存.
 
 本示例意在展示一个完整的文本分类过程:
 
-* 我们会判断模型文件是否存在, 如果存在则加载, 不存在则会进行训练;
+* 我们会根据用户输入的参数判断是需要训练还是预测;
 * 如果是需要训练, 我们会获取训练数据, 训练数据是已分好类的文本, 然后我们会通过对训练数据进行分类得到一个模型(关于数据的预处理也会包含进来);
 * 根据训练好的模型, 我们会进行预测, 并会将预测的结果放到 Redis 中, 供对外提供服务(比如 restful api 等);
 
 关于模型, 有几点要说的是, 我们会尝试 2~3 种模型, 包括会做 "交叉验证", 做 "Boosting", 最终选择一个合适的模型.
 
+训练我们用了 20W 的数据(我们在 git 上只提供了数据样例), 实际预测的时候是从 kafka 读取流数据进行预测, 预测了大概 400W+ 的数据.
+
+代码中用到的样例数据见: [样例数据](/src/main/resources/ml/sample_textcategory.txt)
+代码中用到的配置文件见: [相关配置](/src/main/resources/conf)
+代码中用到的词典见: [词典资源](/src/main/resources/dict)
+
 代码提交方式如下:
 
 ```
 # 训练
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.practice.TextCategory \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.practice.ml.TextCategory \
                                         --master yarn \
                                         --deploy-mode cluster \
                                         --driver-cores 1 \
                                         --driver-memory 512M \
-                                        --num-executors 4 \
+                                        --num-executors 8 \
+                                        --executor-cores 2 \
+                                        --executor-memory 2048M \
+                                        --files textcategory_conf.properties#props,log4j-streaming.properties \
+                                        --conf "spark.driver.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
+                                        --conf "spark.executor.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar train
+
+# 预测
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.practice.ml.TextCategory \
+                                        --master yarn \
+                                        --deploy-mode cluster \
+                                        --driver-cores 1 \
+                                        --driver-memory 512M \
+                                        --num-executors 3 \
                                         --executor-cores 2 \
                                         --executor-memory 1024M \
-                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
-
-# 测试
+                                        --files textcategory_conf.properties#props,log4j-streaming.properties \
+                                        --conf "spark.driver.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
+                                        --conf "spark.executor.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar predict
 
 # 我们在 redis 中查看:
 
