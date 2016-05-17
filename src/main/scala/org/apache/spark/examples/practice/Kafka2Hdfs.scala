@@ -26,6 +26,7 @@ import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.log4j.Logger
 
 // 参数的 key 值
 object Params {
@@ -61,6 +62,8 @@ object BroadConfig {
 
 // 获取 HDFS 连接
 object HdfsConnection {
+  val logger = Logger.getLogger(getClass.getName)
+
   // hdfs 的配置
   val conf: Configuration = new Configuration()
   // 文件系统句柄
@@ -99,7 +102,9 @@ object HdfsConnection {
 
         // 创建新的目录
         val path = new Path(s"${currentPath}${File.separator}${currentDay}")
-        println(s"create dir: $path")
+
+        logger.info(s"create dir: $path")
+
         if (!fileSystem.exists(path)) {
           fileSystem.mkdirs(path)
         }
@@ -116,7 +121,9 @@ object HdfsConnection {
         }
 
         val newPath = new Path(s"${currentPath}${File.separator}${currentDay}${File.separator}${java.util.UUID.randomUUID.toString}-${nowHour}")
-        println(s"create file: $newPath")
+
+        logger.info(s"create file: $newPath")
+
         val fout: FSDataOutputStream = fileSystem.create(newPath)
 
         writeHandler.set((fout, nowHour))
@@ -131,6 +138,8 @@ object HdfsConnection {
 }
 
 object Kafka2Hdfs {
+  val logger = Logger.getLogger(getClass.getName)
+
   def functionToCreateContext(): StreamingContext = {
     // 加载配置文件, 配置文件示例为: conf.properties
     val sparkConf = new SparkConf().setAppName("Kafka2Hdfs").
@@ -159,10 +168,10 @@ object Kafka2Hdfs {
     val group = BroadConfig.getInstance(ctx).value.getProperty(Params.GROUP)
     val numStreams = BroadConfig.getInstance(ctx).value.getProperty(Params.NUM_STREAMS) toInt
 
-    println(s"topics: $topics, zookeeper: $zk, group id: $group, num streams: $numStreams")
+    logger.info(s"topics: $topics, zookeeper: $zk, group id: $group, num streams: $numStreams")
 
     // 注意这里也没有设置 Parallelism, 这是因为 Direct Stream 方式有简单的并行性, 即 "many RDD partitions as there are Kafka partitions".
-    // 不过千万要注意, Direct Stream 还处于试验阶段, 慎用啊
+    // 不过千万要注意, Direct Stream 还处于试验阶段, 慎用啊!!!
     //    val topicsSet = topics.split(",").toSet
     //    val kafkaParams = Map[String, String]("metadata.broker.list" -> brokers, "auto.offset.reset" -> "smallest")
     //    val messages = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
@@ -180,7 +189,7 @@ object Kafka2Hdfs {
 
     val hdfsPath = BroadConfig.getInstance(ctx).value.getProperty(Params.HDFS_PATH)
 
-    println(s"hdfs path: $hdfsPath")
+    logger.info(s"hdfs path: $hdfsPath")
 
     // 对我们获取的数据, 进行处理, 保存到 hdfs 中
     messages.map(x => x._2).foreachRDD { rdd =>
@@ -200,7 +209,7 @@ object Kafka2Hdfs {
           try {
             connection.hflush()
           } catch {
-            case e: Exception => println(s"hflush exception: ${e.getMessage}")
+            case e: Exception => logger.error(s"hflush exception: ${e.getMessage}")
           }
       }
     }

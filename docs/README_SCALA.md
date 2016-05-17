@@ -769,6 +769,8 @@ Triangle Counting: 三角计算是非常有意思的，它是要解决这种问�
 
 该程序还展示了如何读取配置文件的信息, 注意这里的 props 是固定的, 代码就是根据这个来解析的.
 
+该程序也展示了如何使用日志, 由于 streaming 是长期运行的程序, 时间久了日志可能会非常大, 因此我们建议 streaming 程序的日志配置文件采用自定义方式.
+
 代码提交方式如下:
 
 ```
@@ -780,7 +782,9 @@ Triangle Counting: 三角计算是非常有意思的，它是要解决这种问�
                                         --num-executors 3 \
                                         --executor-cores 2 \
                                         --executor-memory 1024M \
-                                        --files conf.properties#props \
+                                        --files conf.properties#props,log4j-streaming.properties \
+                                        --conf "spark.driver.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
+                                        --conf "spark.executor.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
 
 # 我们在 hdfs 中查看到:
@@ -804,27 +808,34 @@ Found 10 items
 * 读取的 kafka 数据是否是一致的, 没有数据丢失 -- OK
 * kafka 如果没有数据, 或者有数据, 程序能否正常的一直运行 -- OK
 
-#### 2 文本挖掘示例: [](/src/main/scala/org/apache/spark/examples/practice/.scala)
+#### 2 文本挖掘示例: [TextCategory](/src/main/scala/org/apache/spark/examples/practice/TextCategory.scala)
 
 这里介绍一下文本分类的实际案例, 数据样本来自 [baifendian](http://www.baifendian.com/) 电商数据, 训练之后, 我们会对未分类的数据进行分类, 分类结果存放在 redis 中保存.
+
+本示例意在展示一个完整的文本分类过程:
+
+* 我们会判断模型文件是否存在, 如果存在则加载, 不存在则会进行训练;
+* 如果是需要训练, 我们会获取训练数据, 训练数据是已分好类的文本, 然后我们会通过对训练数据进行分类得到一个模型(关于数据的预处理也会包含进来);
+* 根据训练好的模型, 我们会进行预测, 并会将预测的结果放到 Redis 中, 供对外提供服务(比如 restful api 等);
+
+关于模型, 有几点要说的是, 我们会尝试 2~3 种模型, 包括会做 "交叉验证", 做 "Boosting", 最终选择一个合适的模型.
 
 代码提交方式如下:
 
 ```
 # 训练
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.practice. \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.practice.TextCategory \
                                         --master yarn \
                                         --deploy-mode cluster \
                                         --driver-cores 1 \
-                                        --driver-memory 4096M \
+                                        --driver-memory 512M \
                                         --num-executors 4 \
                                         --executor-cores 2 \
-                                        --executor-memory 2048M \
+                                        --executor-memory 1024M \
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
 
 # 测试
 
 # 我们在 redis 中查看:
-
 
 ```
