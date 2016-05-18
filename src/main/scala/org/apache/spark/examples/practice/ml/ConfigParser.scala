@@ -52,22 +52,19 @@ class ConfigParser(filename: String) {
   val predictRedisPort = config.getProperty("predict.redis.port") toInt
 
   // === 加载自定义词典 ===
-  val userDict = ArrayBuffer[String]()
-  for (key <- config.keySet()) {
+  private val t_userDict = ArrayBuffer[String]()
+  for (key <- config.keySet().toArray()) {
     key match {
-      case e: String => if (e.startsWith("segmenter.user_dict")) userDict += config.getProperty(e)
+      case e: String => if (e.startsWith("segmenter.user_dict")) t_userDict += config.getProperty(e)
       case _ =>
     }
   }
 
+  val userDict = t_userDict toArray
+
   // === 加载预处理的词库 ===
-  val preprocessCityFile = config.getProperty("preprocess.city_file")
-  val preprocessCityOutFile = config.getProperty("preprocess.city_out_file")
-  val preprocessColorFile = config.getProperty("preprocess.color_file")
-  val preprocessMedicineile = config.getProperty("preprocess.medicine_file")
-  val preprocessNumZhFile = config.getProperty("preprocess.num_zh_file")
+  val preprocessMedicineFile = config.getProperty("preprocess.medicine_file")
   val preprocessQuantifierFile = config.getProperty("preprocess.quantifier_file")
-  val preprocessReserveFile = config.getProperty("preprocess.reserve_file")
   val preprocessStopFile = config.getProperty("preprocess.stop_file")
 
   // 对参数进行格式化处理返回
@@ -86,13 +83,8 @@ class ConfigParser(filename: String) {
       s"predictRedisHost: $predictRedisHost" +
       s"predictRedisPort: $predictRedisPort " +
       s"""userDict: ${userDict.mkString(",")} """ +
-      s"preprocessCityFile: $preprocessCityFile " +
-      s"preprocessCityOutFile: $preprocessCityOutFile " +
-      s"preprocessColorFile: $preprocessColorFile " +
-      s"preprocessMedicineile: $preprocessMedicineile" +
-      s"preprocessNumZhFile: $preprocessNumZhFile" +
-      s"preprocessQuantifierFile: $preprocessQuantifierFile" +
-      s"preprocessReserveFile: $preprocessReserveFile" +
+      s"preprocessMedicineile: $preprocessMedicineFile " +
+      s"preprocessQuantifierFile: $preprocessQuantifierFile " +
       s"preprocessStopFile: $preprocessStopFile"
   }
 }

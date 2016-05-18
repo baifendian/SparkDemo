@@ -831,6 +831,9 @@ Found 10 items
 代码提交方式如下:
 
 ```
+# 打包词典文件
+qifeng.dai@bgsbtsp0006-dqf sparkbook$ tar zcvf dict.tar.gz dict/
+
 # 训练
 [qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.practice.ml.TextCategory \
                                         --master yarn \
@@ -841,6 +844,7 @@ Found 10 items
                                         --executor-cores 2 \
                                         --executor-memory 2048M \
                                         --files textcategory_conf.properties#props,log4j-streaming.properties \
+                                        --archives dict.tar.gz#dict \
                                         --conf "spark.driver.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
                                         --conf "spark.executor.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar train
@@ -855,6 +859,7 @@ Found 10 items
                                         --executor-cores 2 \
                                         --executor-memory 1024M \
                                         --files textcategory_conf.properties#props,log4j-streaming.properties \
+                                        --archives dict.tar.gz \
                                         --conf "spark.driver.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
                                         --conf "spark.executor.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar predict

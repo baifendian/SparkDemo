@@ -1,0 +1,88 @@
+/**
+  * Copyright (C) 2015 Baifendian Corporation
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  * http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+package org.apache.spark.examples.practice.ml
+
+import java.io.BufferedReader
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths}
+
+import org.apache.spark.ml.UnaryTransformer
+import org.apache.spark.ml.param.ParamMap
+import org.apache.spark.ml.util.Identifiable
+import org.apache.spark.sql.types.{ArrayType, DataType, StringType}
+
+import scala.collection.mutable.Set
+
+class QuantifierProcess(override val uid: String, private val dict: String)
+  extends UnaryTransformer[Seq[String], Seq[String], QuantifierProcess] {
+
+  def this(dict: String) = this(Identifiable.randomUID("quan"), dict)
+
+  // 词典文件的正则形式
+  private val wordsSet = loadDict
+  private val numRegex = """^\d+\.?\d*|[%s]+""".r
+
+  // 词典加载
+  private def loadDict: Set[String] = {
+    val br: BufferedReader = Files.newBufferedReader(Paths.get(dict), StandardCharsets.UTF_8)
+    val words = Set[String]()
+
+    var count = 0
+
+    while (br.ready()) {
+      words += br.readLine()
+      count += 1
+    }
+
+    println(s"load quantifier words: $count")
+
+    words
+  }
+
+  override protected def createTransformFunc: Seq[String] => Seq[String] = (words: Seq[String]) => {
+    // 处理 "单位词", arr 是前面处理过的单元, c 是当前要处理的 word
+    words.foldLeft(List[String]())((arr, c) => {
+      val p = arr.lastOption
+
+      p match {
+        case None => {
+          // 如果 c 中的数字去掉, 是单位的话
+          val newC = wordsSet.contains(numRegex.replaceAllIn(c, "")) match {
+            case true => s"_QUAN_${c}"
+            case false => c
+          }
+          arr :+ newC
+        }
+        case Some(e) => {
+          // 如果 e 是数字, 且 c 是单位的话
+          val newC =
+            if (numRegex.replaceAllIn(e, "") == "" && wordsSet.contains(c)) s"_QUAN_${c}"
+            else c
+          arr :+ newC
+        }
+      }
+    })
+  }
+
+  override protected def validateInputType(inputType: DataType): Unit = {
+    require(inputType.isInstanceOf[ArrayType],
+      s"The input column must be ArrayType, but got $inputType.")
+  }
+
+  override protected def outputDataType: DataType = new ArrayType(StringType, true)
+
+  override def copy(extra: ParamMap): QuantifierProcess = defaultCopy(extra)
+}

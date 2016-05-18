@@ -16,25 +16,81 @@
 package org.apache.spark.examples.practice.ml
 
 import org.apache.log4j.Logger
+import org.apache.spark.ml.feature.{StopWordsRemover, VectorAssembler}
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.{SparkConf, SparkContext}
 
 object TextCategory {
   val logger = Logger.getLogger(getClass.getName)
 
   /**
     * 训练模型, 训练之后保存到指定的目录
+    *
     */
   def train: Unit = {
-    // 加载配置
+    // === 加载配置 ===
     val parser: ConfigParser = ConfigParser()
 
-    // 对文件进行分词处理
+    logger.info(s"config info: ${parser.toString}")
 
-    // 对文件进行预处理
+    // === 初始化 SparkContext ===
+    val conf = new SparkConf().setAppName("TextCategory")
+    val sc = new SparkContext(conf)
+    val sqlContext = new SQLContext(sc)
 
-    // 构建 Pipeline
+    val trainingDataFrame = sqlContext.read.json(parser.trainPath)
+    trainingDataFrame.printSchema()
 
-    // 训练模型
+    // === 预处理过程 ===
+    // 对标题进行中文分词
+    val tokenizer = new ChineseSegment(Option(parser.userDict)).
+      setInputCol("title").
+      setOutputCol("title_words")
 
+    val tokenized = tokenizer.transform(trainingDataFrame)
+    tokenized.select("id", "brand", "title_words").take(50).foreach(x => println(s"tokenizer result: $x"))
+
+    // 处理单位词信息, 之后对数词也做一下过滤
+    val quantifier = new QuantifierProcess(parser.preprocessQuantifierFile).
+      setInputCol("title_words").
+      setOutputCol("quan_title_words")
+
+    val quantified = quantifier.transform(tokenized)
+    quantified.select("id", "brand", "quan_title_words").take(50).foreach(x => println(s"quantifier result: $x"))
+
+    // 对药品词信息做一下处理
+//    val medicine = new MedicineProcess(parser.preprocessMedicineFile).
+//      setInputCol("quan_title_words").
+//      setOutputCol("med_quan_title_words")
+//
+//    val medicined = medicine.transform(quantified)
+//    medicined.select("id", "brand", "med_quan_title_words").take(50).foreach(x => println(s"med result: $x"))
+
+
+    // 停用词过滤
+
+//
+//    // 将 brand 和 title_words 融合
+    val assembler = new VectorAssembler()
+//      .setInputCols(Array("brand", "words"))
+//      .setOutputCol("brand_words")
+//
+//    val combined = assembler.transform(numFilted)
+//    combined.select("id", "brand_words").take(50).foreach(x => println(s"tokenizer result: $x"))
+//
+//    // 去除无用词
+//
+//    val remover = new StopWordsRemover()
+//      .setInputCol("raw")
+//      .setOutputCol("filtered")
+
+    // === 构建向量(对 word 的形式构建 tf-idf, 对于 topic 的形式, 采用 lda 处理) ===
+
+    // === 构建 Pipeline ===
+
+    // === 训练模型 ===
+
+    sc.stop()
   }
 
   /**
@@ -53,7 +109,7 @@ object TextCategory {
     args(0) match {
       case "train" => train
       case "predict" => predict
-      case _ => logger.error("in-valid command, must be train or predict.")
+      case _ => logger.error("invalid command, must be train or predict.")
     }
   }
 }
