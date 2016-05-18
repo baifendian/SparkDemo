@@ -55,10 +55,10 @@ class MedicineProcess(override val uid: String, private val dict: String)
     // 处理 "单位词", arr 是前面处理过的单元, c 是当前要处理的 word
     words.foldLeft(List[String]())((arr, c) => {
       val newC = wordsSet.contains(c) match {
-        case true => s"_QUAN_${c}"
-        case false => c
+        case true => List(c, "_MED_")
+        case false => List(c)
       }
-      arr :+ newC
+      arr ++ newC
     })
   }
 

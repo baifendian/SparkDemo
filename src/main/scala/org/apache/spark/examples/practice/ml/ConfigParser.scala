@@ -52,15 +52,20 @@ class ConfigParser(filename: String) {
   val predictRedisPort = config.getProperty("predict.redis.port") toInt
 
   // === 加载自定义词典 ===
-  private val t_userDict = ArrayBuffer[String]()
-  for (key <- config.keySet().toArray()) {
-    key match {
-      case e: String => if (e.startsWith("segmenter.user_dict")) t_userDict += config.getProperty(e)
-      case _ =>
-    }
-  }
+  val userDict = loadUserDict
 
-  val userDict = t_userDict toArray
+  private def loadUserDict: Array[String] = {
+    val t_userDict = ArrayBuffer[String]()
+
+    for (key <- config.keySet().toArray()) {
+      key match {
+        case e: String => if (e.startsWith("segmenter.user_dict")) t_userDict += config.getProperty(e)
+        case _ =>
+      }
+    }
+
+    t_userDict toArray
+  }
 
   // === 加载预处理的词库 ===
   val preprocessMedicineFile = config.getProperty("preprocess.medicine_file")

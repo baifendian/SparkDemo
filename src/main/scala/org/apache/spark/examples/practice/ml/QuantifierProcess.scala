@@ -57,23 +57,33 @@ class QuantifierProcess(override val uid: String, private val dict: String)
     words.foldLeft(List[String]())((arr, c) => {
       val p = arr.lastOption
 
-      p match {
-        case None => {
-          // 如果 c 中的数字去掉, 是单位的话
-          val newC = wordsSet.contains(numRegex.replaceAllIn(c, "")) match {
-            case true => s"_QUAN_${c}"
+      // 是不是要参考前一个单词 p
+      val useP = p match {
+        case None => false
+        case Some(e) => if (numRegex.replaceAllIn(e, "") == "") true else false
+      }
+
+      val isQuan =
+        useP match {
+          case true =>
+            // p 是数字
+            if (wordsSet.contains(c)) true
+            else false
+          case false =>
+            // p 不是数字或不存在
+            if (wordsSet.contains(numRegex.replaceAllIn(c, ""))) true
+            else false
+        }
+
+      // 返回 List, 这里对数字进行了过滤
+      if(numRegex.replaceAllIn(c, "") == "") arr
+      else
+        arr :+ {
+          isQuan match {
+            case true => s"_QUAN_$c"
             case false => c
           }
-          arr :+ newC
         }
-        case Some(e) => {
-          // 如果 e 是数字, 且 c 是单位的话
-          val newC =
-            if (numRegex.replaceAllIn(e, "") == "" && wordsSet.contains(c)) s"_QUAN_${c}"
-            else c
-          arr :+ newC
-        }
-      }
     })
   }
 
