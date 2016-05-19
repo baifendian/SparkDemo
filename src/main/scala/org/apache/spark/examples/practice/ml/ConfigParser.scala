@@ -31,6 +31,7 @@ class ConfigParser(filename: String) {
 
   // === 加载通用的配置信息 ===
   val commonModelPath: String = config.getProperty("common.model.path")
+  val commonIndexModelPath: String = config.getProperty("common.indexmodel.path")
   val commonVecSpace: String = config.getProperty("common.vec_space")
   val commonTFNumber: Int = config.getProperty("common.tf_number") toInt
 
@@ -39,6 +40,7 @@ class ConfigParser(filename: String) {
   val topicParamNIter: Int = config.getProperty("topic_param.n_iter") toInt
   val topicParamNMerge: Int = config.getProperty("topic_param.n_merge") toInt
   val topicParamMaxFreq: Int = config.getProperty("topic_param.max_freq") toInt
+  val topicParamWord2vecSize: Int = config.getProperty("topic_param.word2vec.size") toInt
 
   // === 加载训练需要的配置信息 ===
   val trainPath: String = config.getProperty("train.path")
@@ -52,6 +54,9 @@ class ConfigParser(filename: String) {
 
   val predictRedisHost = config.getProperty("predict.redis.host")
   val predictRedisPort = config.getProperty("predict.redis.port") toInt
+
+  // === 文件预测的方式 ===
+  val testFilePath = config.getProperty("test.path")
 
   // === 加载自定义词典 ===
   val userDict = loadUserDict
@@ -77,12 +82,14 @@ class ConfigParser(filename: String) {
   // 对参数进行格式化处理返回
   override def toString(): String = {
     s"commonModelPath: $commonModelPath " +
+      s"commonIndexModelPath: $commonIndexModelPath " +
       s"commonVecSpace: $commonVecSpace " +
       s"commonTFNumber: $commonTFNumber " +
       s"topicParamNTopics: $topicParamNTopics " +
       s"topicParamNIter: $topicParamNIter " +
       s"topicParamNMerge: $topicParamNMerge " +
       s"topicParamMaxFreq: $topicParamMaxFreq " +
+      s"topicParamWord2vecSize: $topicParamWord2vecSize " +
       s"trainPath: $trainPath " +
       s"trainForestNum: $trainForestNum " +
       s"predictZookeeper: $predictZookeeper " +
@@ -91,6 +98,7 @@ class ConfigParser(filename: String) {
       s"predictNumStreams: $predictNumStreams " +
       s"predictRedisHost: $predictRedisHost" +
       s"predictRedisPort: $predictRedisPort " +
+      s"predictFilePath: $testFilePath " +
       s"""userDict: ${userDict.mkString(",")} """ +
       s"preprocessMedicineile: $preprocessMedicineFile " +
       s"preprocessQuantifierFile: $preprocessQuantifierFile " +
