@@ -13,7 +13,7 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
   */
-package org.apache.spark.examples.practice
+package org.apache.spark.examples.practice.streaming
 
 import java.io.{File, FileInputStream}
 import java.text.SimpleDateFormat
@@ -140,7 +140,7 @@ object HdfsConnection {
 object Kafka2Hdfs {
   val logger = Logger.getLogger(getClass.getName)
 
-  def functionToCreateContext(): StreamingContext = {
+  private def functionToCreateContext(): StreamingContext = {
     // 加载配置文件, 配置文件示例为: conf.properties
     val sparkConf = new SparkConf().setAppName("Kafka2Hdfs").
       set("spark.streaming.receiver.writeAheadLog.enable", "true"). // 先写日志, 提高容错性, 避免 receiver 挂掉

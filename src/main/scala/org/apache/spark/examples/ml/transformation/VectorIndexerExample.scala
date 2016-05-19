@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.examples.ml
+package org.apache.spark.examples.ml.transformation
 
 import org.apache.spark.ml.feature.VectorIndexer
 import org.apache.spark.sql.SQLContext

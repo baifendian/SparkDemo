@@ -32,6 +32,7 @@ class ConfigParser(filename: String) {
   // === 加载通用的配置信息 ===
   val commonModelPath: String = config.getProperty("common.model.path")
   val commonVecSpace: String = config.getProperty("common.vec_space")
+  val commonTFNumber: Int = config.getProperty("common.tf_number") toInt
 
   // === 加载 topic 主题空间需要的参数
   val topicParamNTopics: Int = config.getProperty("topic_param.n_topics") toInt
@@ -41,6 +42,7 @@ class ConfigParser(filename: String) {
 
   // === 加载训练需要的配置信息 ===
   val trainPath: String = config.getProperty("train.path")
+  val trainForestNum: Int = config.getProperty("train.forest.num") toInt
 
   // === 加载预测需要的配置信息 ===
   val predictZookeeper: String = config.getProperty("predict.zookeeper")
@@ -76,11 +78,13 @@ class ConfigParser(filename: String) {
   override def toString(): String = {
     s"commonModelPath: $commonModelPath " +
       s"commonVecSpace: $commonVecSpace " +
+      s"commonTFNumber: $commonTFNumber " +
       s"topicParamNTopics: $topicParamNTopics " +
       s"topicParamNIter: $topicParamNIter " +
       s"topicParamNMerge: $topicParamNMerge " +
       s"topicParamMaxFreq: $topicParamMaxFreq " +
       s"trainPath: $trainPath " +
+      s"trainForestNum: $trainForestNum " +
       s"predictZookeeper: $predictZookeeper " +
       s"predictGroupid: $predictGroupid " +
       s"predictTopics: $predictTopics " +

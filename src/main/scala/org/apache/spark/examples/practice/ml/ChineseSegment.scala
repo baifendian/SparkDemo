@@ -63,7 +63,7 @@ class ChineseSegment(override val uid: String, private val userDict: Option[Arra
 
   override protected def createTransformFunc: String => Seq[String] = (sentence: String) => {
     // 同义词和噪声词处理
-    for((k, v) <-  ChineseSegment.replaceStr) {
+    for ((k, v) <- ChineseSegment.replaceStr) {
       sentence.replace(k, v)
     }
 
@@ -75,7 +75,8 @@ class ChineseSegment(override val uid: String, private val userDict: Option[Arra
     val words = ArrayBuffer[String]()
 
     while (segs.hasNext) {
-      words += segs.next().word
+      val word = segs.next().word.stripMargin(' ')
+      words += word
     }
 
     words

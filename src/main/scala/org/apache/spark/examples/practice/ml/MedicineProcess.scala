@@ -63,7 +63,8 @@ class MedicineProcess(override val uid: String, private val dict: String)
   }
 
   override protected def validateInputType(inputType: DataType): Unit = {
-    require(inputType == ArrayType, s"Input type must be array type but got $inputType.")
+    require(inputType.isInstanceOf[ArrayType],
+      s"The input column must be ArrayType, but got $inputType.")
   }
 
   override protected def outputDataType: DataType = new ArrayType(StringType, true)

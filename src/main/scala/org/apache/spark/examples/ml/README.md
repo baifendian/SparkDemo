@@ -1585,7 +1585,7 @@ Coefficients: [0.0,0.0] Intercept: 0.0 Scale: 1.0
 
 === Clustering ===
 
-### 33 KMeans 聚类示例: [KMeansExample](/src/main/scala/org/apache/spark/examples/ml/KMeansExample.scala)
+### 33 KMeans 聚类示例: [KMeansExample](/src/main/scala/org/apache/spark/examples/ml/cluster/KMeansExample.scala)
 
 k-means 是一种最常用的聚类算法，将数据聚类到指定数目的簇中，MLLib 实现的称之为 kmeans。
 
@@ -1633,7 +1633,7 @@ Show cluster results:
 +---+-------------+----------+
 ```
 
-### 34 LDA 示例: [LDAExample](/src/main/scala/org/apache/spark/examples/ml/LDAExample.scala)
+### 34 LDA 示例: [LDAExample](/src/main/scala/org/apache/spark/examples/ml/cluster/LDAExample.scala)
 
 LDA 实现为一个 Estimator，支持 EMLDAOptimizer， OnlineLDAOptimizer，且生成了一个 LDAModel 作为基本模型。
 

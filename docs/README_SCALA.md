@@ -839,10 +839,10 @@ qifeng.dai@bgsbtsp0006-dqf sparkbook$ tar zcvf dict.tar.gz dict/
                                         --master yarn \
                                         --deploy-mode cluster \
                                         --driver-cores 1 \
-                                        --driver-memory 512M \
-                                        --num-executors 8 \
+                                        --driver-memory 1024M \
+                                        --num-executors 4 \
                                         --executor-cores 2 \
-                                        --executor-memory 2048M \
+                                        --executor-memory 8192M \
                                         --files textcategory_conf.properties#props,log4j-streaming.properties \
                                         --archives dict.tar.gz#dict \
                                         --conf "spark.driver.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
@@ -857,7 +857,7 @@ qifeng.dai@bgsbtsp0006-dqf sparkbook$ tar zcvf dict.tar.gz dict/
                                         --driver-memory 512M \
                                         --num-executors 3 \
                                         --executor-cores 2 \
-                                        --executor-memory 1024M \
+                                        --executor-memory 2048M \
                                         --files textcategory_conf.properties#props,log4j-streaming.properties \
                                         --archives dict.tar.gz \
                                         --conf "spark.driver.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
