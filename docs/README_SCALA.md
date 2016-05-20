@@ -810,17 +810,16 @@ Found 10 items
 * 读取的 kafka 数据是否是一致的, 没有数据丢失 -- OK
 * kafka 如果没有数据, 或者有数据, 程序能否正常的一直运行 -- OK
 
-#### 2 文本挖掘示例: [TextCategory](/src/main/scala/org/apache/spark/examples/practice/ml/TextCategory.scala)
+#### 2 文本挖掘示例: [TextCategoryV16](/src/main/scala/org/apache/spark/examples/practice/ml/TextCategoryV16.scala)
 
-这里介绍一下文本分类的实际案例, 数据样本来自 [baifendian](http://www.baifendian.com/) 电商数据, 训练之后, 我们会对未分类的数据进行分类, 分类结果存放在 redis 中保存.
+这里介绍一下文本分类的实际案例, 数据样本来自 [baifendian](http://www.baifendian.com/) 电商数据, 训练之后, 我们会对未分类的数据进行分类.
 
 本示例意在展示一个完整的文本分类过程:
 
-* 我们会根据用户输入的参数判断是需要训练还是预测;
-* 如果是需要训练, 我们会获取训练数据, 训练数据是已分好类的文本, 然后我们会通过对训练数据进行分类得到一个模型(关于数据的预处理也会包含进来);
-* 根据训练好的模型, 我们会进行预测, 并会将预测的结果放到 Redis 中, 供对外提供服务(比如 restful api 等);
+* 我们会根据配置文件信息, 读取训练语料进行训练, 训练完之后得到一个模型
+* 根据训练好的模型, 我们会进行预测, 并会将预测的结果放到 HDFS 中
 
-关于模型, 有几点要说的是, 我们会尝试 2~3 种模型, 包括会做 "交叉验证", 做 "Boosting", 最终选择一个合适的模型.
+注意, 由于目前 ml package 的一些功能限制, 我们的示例做了简化, 后面 2.0 上线后再进行完善.
 
 训练我们用了 20W 的数据(我们在 git 上只提供了数据样例), 实际预测的时候是从 kafka 读取流数据进行预测, 预测了大概 400W+ 的数据.
 
@@ -835,7 +834,7 @@ Found 10 items
 qifeng.dai@bgsbtsp0006-dqf sparkbook$ tar zcvf dict.tar.gz dict/
 
 # 训练
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.practice.ml.TextCategory \
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.practice.ml.TextCategoryV16 \
                                         --master yarn \
                                         --deploy-mode cluster \
                                         --driver-cores 1 \
@@ -847,23 +846,8 @@ qifeng.dai@bgsbtsp0006-dqf sparkbook$ tar zcvf dict.tar.gz dict/
                                         --archives dict.tar.gz#dict \
                                         --conf "spark.driver.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
                                         --conf "spark.executor.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
-                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar train
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
 
-# 预测
-[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.practice.ml.TextCategory \
-                                        --master yarn \
-                                        --deploy-mode cluster \
-                                        --driver-cores 1 \
-                                        --driver-memory 512M \
-                                        --num-executors 3 \
-                                        --executor-cores 2 \
-                                        --executor-memory 2048M \
-                                        --files textcategory_conf.properties#props,log4j-streaming.properties \
-                                        --archives dict.tar.gz \
-                                        --conf "spark.driver.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
-                                        --conf "spark.executor.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
-                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar predict
-
-# 我们在 redis 中查看:
+# 输出结果
 
 ```

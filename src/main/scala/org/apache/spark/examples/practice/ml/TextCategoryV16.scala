@@ -20,18 +20,19 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
 import org.apache.log4j.Logger
+import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.RandomForestClassifier
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
-import org.apache.spark.ml.feature._
-import org.apache.spark.ml.{Pipeline, PipelineModel}
+import org.apache.spark.ml.feature.{IndexToString, StringIndexer, _}
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.mutable.ArrayBuffer
 
-@deprecated("will be use in spark 2.0")
-object TextCategory {
+object TextCategoryV16 {
   private val logger = Logger.getLogger(getClass.getName)
+
+  private val ID = "id"
 
   private val TITLE = "title"
   private val TITLE_WORDS = "title_words"
@@ -43,7 +44,7 @@ object TextCategory {
   private val BRAND_WORDS = "brand_words"
   private val STOPWORD_BRAND_WORDS = "stopword_brand_words"
 
-  private val RAW_FEATURES = "rawFeatures"
+  private val RAW_FEATURES = "raw_features"
   private val FEATURES = "features"
 
   private val INDEXED_LABEL = "indexedLabel"
@@ -62,7 +63,7 @@ object TextCategory {
       count += 1
     }
 
-    // 很多数据带了 "None", 需要把它去掉
+    // 很多数据带了 "None", "NULL", " ", 需要把它去掉
     words += "None"
     words += "NULL"
     words + " "
@@ -72,8 +73,8 @@ object TextCategory {
     words toArray
   }
 
-  // 数据预处理
-  private def preProcess(parser: ConfigParser, data: DataFrame): DataFrame = {
+  // 构造 pipeline
+  private def constructPipeline(parser: ConfigParser, sqlContext: SQLContext): Pipeline = {
     // 对标题进行中文分词
     val tokenizer = new ChineseSegment(Option(parser.userDict)).
       setInputCol(TITLE).
@@ -89,12 +90,6 @@ object TextCategory {
       setInputCol(QUAN_TITLE_WORDS).
       setOutputCol(MED_QUAN_TITLE_WORDS)
 
-    // 进行转换处理
-    medicine.transform(quantifier.transform(tokenizer.transform(data)))
-  }
-
-  // 构造 pipeline
-  private def featurePipeline(parser: ConfigParser, sqlContext: SQLContext): Pipeline = {
     // 将 brand 和 title_words 融合
     val sqlTrans = new SQLTransformer().setStatement(
       s"SELECT *, strArrayMerge(${BRAND}, ${MED_QUAN_TITLE_WORDS}) AS ${BRAND_WORDS} FROM __THIS__")
@@ -129,59 +124,59 @@ object TextCategory {
           .setMinCount(0)
     }
 
-    new Pipeline().setStages(Array(sqlTrans, remover, hashingTF, space))
+    // 模型训练过程
+    val rf = new RandomForestClassifier()
+      .setLabelCol(INDEXED_LABEL)
+      .setFeaturesCol(FEATURES)
+      .setNumTrees(parser.trainForestNum)
+
+    new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
+      remover, hashingTF, space, /*labelIndexer,*/ rf /*, labelConverter*/))
   }
 
-  /**
-    * 训练模型, 训练之后保存到指定的目录
-    *
-    */
-  def train: Unit = {
+  def main(args: Array[String]): Unit = {
     // 加载配置
     val parser: ConfigParser = ConfigParser()
 
     logger.info(s"config info: ${parser.toString}")
 
     // 初始化 SparkContext
-    val conf = new SparkConf().setAppName("TextCategory")
+    val conf = new SparkConf().setAppName("TextCategoryV16")
     val sc = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
 
     // 自定义函数, 注意 array 类型为 Seq, 不能为 Array
     sqlContext.udf.register("strArrayMerge", (str: String, array: Seq[String]) => str +: array)
 
-    // 加载数据
-    val trainingDataFrame = sqlContext.read.json(parser.trainPath)
-    trainingDataFrame.printSchema()
-
-    // 数据预处理
-    val preDataFrame = preProcess(parser, trainingDataFrame)
-    preDataFrame.printSchema()
-
     // 数据先进行转换, 对分类进行转换
     val labelIndexer = new StringIndexer()
       .setInputCol(CATEGORY)
       .setOutputCol(INDEXED_LABEL)
 
-    logger.info("index model training and save")
-    val labelModel = labelIndexer.fit(preDataFrame)
-    val labelDataFrame = labelModel.transform(preDataFrame)
+    // 加载训练数据
+    val rawTrainingDataFrame = sqlContext.read.json(parser.trainPath)
+    val labelModel = labelIndexer.fit(rawTrainingDataFrame)
+    val trainingDataFrame = labelModel.transform(rawTrainingDataFrame)
 
-    labelModel.write.overwrite().save(parser.commonIndexModelPath)
+    println("training data schema")
+    trainingDataFrame.printSchema()
 
-    // 构造 feature 的 pipe
-    logger.info("construct pipeline")
-    val pipeline = featurePipeline(parser, sqlContext)
+    // 加载测试数据
+    val rawTestDataFrame = sqlContext.read.json(parser.testFilePath)
+    val testDataFrame = labelModel.transform(rawTestDataFrame)
 
-    logger.info("model training and save")
-    val featureModel = pipeline.fit(labelDataFrame)
-    featureModel.write.overwrite().save(parser.commonModelPath)
+    println("test data schema")
+    testDataFrame.printSchema()
 
-    // 模型训练过程
-    val rf = new RandomForestClassifier()
-      .setLabelCol(INDEXED_LABEL)
-      .setFeaturesCol(FEATURES)
-      .setNumTrees(parser.trainForestNum)
+    // 构造 pipeline, 训练模型
+    val pipeline = constructPipeline(parser, sqlContext)
+
+    println("model train")
+    val model = pipeline.fit(trainingDataFrame)
+
+    // 测试
+    println("model test")
+    val rawTestResult: DataFrame = model.transform(testDataFrame)
 
     // 逆转换过程
     val labelConverter = new IndexToString()
@@ -189,13 +184,15 @@ object TextCategory {
       .setOutputCol(PREDICTED_LABEL)
       .setLabels(labelModel.labels)
 
-    val model = rf.fit(labelDataFrame)
+    val testResult = labelConverter.transform(rawTestResult)
 
-    // 模型效果测试
-    val predictions = labelConverter.transform(model.transform(labelDataFrame))
+    println("test result schema")
+    testResult.printSchema()
+    testResult.show(100)
 
-    predictions.printSchema()
-    predictions.show(20)
+    // 保存
+    println("test result save")
+    testResult.select(ID, BRAND, TITLE, CATEGORY, PREDICTED_LABEL).write.format("json").save(parser.testResultPath)
 
     // 评估分类的效果
     val evaluator = new MulticlassClassificationEvaluator()
@@ -203,70 +200,12 @@ object TextCategory {
       .setPredictionCol(PREDICTION)
       .setMetricName("precision")
 
-    val accuracy = evaluator.evaluate(predictions)
+    println("model evaluation")
+    val accuracy = evaluator.evaluate(testResult)
+
     println("Test Error = " + (1.0 - accuracy))
 
     // spark context stop
     sc.stop()
-  }
-
-  /**
-    * 测试模型
-    *
-    */
-  def test: Unit = {
-    // 加载配置
-    val parser: ConfigParser = ConfigParser()
-
-    // 初始化
-    val conf = new SparkConf().setAppName("TextCategory")
-    val sc = new SparkContext(conf)
-    val sqlContext = new SQLContext(sc)
-
-    // 自定义函数, 注意 array 类型为 Seq, 不能为 Array
-    sqlContext.udf.register("strArrayMerge", (str: String, array: Seq[String]) => str +: array)
-
-    // 读取待测试数据
-    val testDataFrame = sqlContext.read.json(parser.testFilePath)
-    testDataFrame.printSchema()
-
-    // 数据预处理
-    val preDataFrame = preProcess(parser, testDataFrame)
-
-    // 加载 index 模型, 分类模型
-    val indexModel = PipelineModel.load(parser.commonIndexModelPath)
-    val model = PipelineModel.load(parser.commonModelPath)
-
-    // 进行实际的测试
-    val labelDataFrame = indexModel.transform(preDataFrame)
-    val testResult = model.transform(labelDataFrame)
-
-    testResult.printSchema()
-    testResult.show(20)
-
-    // 查看分类效果
-    val evaluator = new MulticlassClassificationEvaluator()
-      .setLabelCol("indexedLabel")
-      .setPredictionCol("prediction")
-      .setMetricName("precision")
-
-    val accuracy = evaluator.evaluate(testResult)
-    println("Test Error = " + (1.0 - accuracy))
-
-    sc.stop()
-  }
-
-  def main(args: Array[String]): Unit = {
-    if (args.length < 1) {
-      System.err.println("Usage: [train/predict/test]")
-      System.exit(1)
-    }
-
-    args(0) match {
-      case "train" => train
-      case "test" => test
-      case "predict" => Prediction.predict
-      case _ => logger.error("invalid command, must be train or predict.")
-    }
   }
 }

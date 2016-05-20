@@ -57,6 +57,7 @@ class ConfigParser(filename: String) {
 
   // === 文件预测的方式 ===
   val testFilePath = config.getProperty("test.path")
+  val testResultPath = config.getProperty("test.result.path")
 
   // === 加载自定义词典 ===
   val userDict = loadUserDict
@@ -98,7 +99,8 @@ class ConfigParser(filename: String) {
       s"predictNumStreams: $predictNumStreams " +
       s"predictRedisHost: $predictRedisHost" +
       s"predictRedisPort: $predictRedisPort " +
-      s"predictFilePath: $testFilePath " +
+      s"testFilePath: $testFilePath " +
+      s"testResultPath: $testResultPath " +
       s"""userDict: ${userDict.mkString(",")} """ +
       s"preprocessMedicineile: $preprocessMedicineFile " +
       s"preprocessQuantifierFile: $preprocessQuantifierFile " +

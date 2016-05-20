@@ -152,8 +152,8 @@ object Kafka2Hdfs {
     val ctx = new SparkContext(sparkConf)
     val ssc = new StreamingContext(ctx, Seconds(10))
 
-    // check point 特性不是很稳定, 慎用!!!
-    ssc.checkpoint("checkpoint/Kafka2Hdfs")
+    // check point 特性不是很稳定, 慎用, driver 重启的时候会有问题!!!
+    // ssc.checkpoint("checkpoint/Kafka2Hdfs")
 
     ssc
   }
