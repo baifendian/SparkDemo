@@ -36,10 +36,10 @@ class ConfigParser(filename: String) {
   val commonTFNumber: Int = config.getProperty("common.tf_number") toInt
 
   // === 加载 topic 主题空间需要的参数
-  val topicParamNTopics: Int = config.getProperty("topic_param.n_topics") toInt
-  val topicParamNIter: Int = config.getProperty("topic_param.n_iter") toInt
-  val topicParamNMerge: Int = config.getProperty("topic_param.n_merge") toInt
-  val topicParamMaxFreq: Int = config.getProperty("topic_param.max_freq") toInt
+  val topicParamTopicNTopics: Int = config.getProperty("topic_param.topic.n_topics") toInt
+  val topicParamTopicNIter: Int = config.getProperty("topic_param.topic.n_iter") toInt
+  val topicParamTopicNMerge: Int = config.getProperty("topic_param.topic.n_merge") toInt
+  val topicParamTopicMaxFreq: Int = config.getProperty("topic_param.topic.max_freq") toInt
   val topicParamWord2vecSize: Int = config.getProperty("topic_param.word2vec.size") toInt
 
   // === 加载训练需要的配置信息 ===
@@ -86,10 +86,10 @@ class ConfigParser(filename: String) {
       s"commonIndexModelPath: $commonIndexModelPath " +
       s"commonVecSpace: $commonVecSpace " +
       s"commonTFNumber: $commonTFNumber " +
-      s"topicParamNTopics: $topicParamNTopics " +
-      s"topicParamNIter: $topicParamNIter " +
-      s"topicParamNMerge: $topicParamNMerge " +
-      s"topicParamMaxFreq: $topicParamMaxFreq " +
+      s"topicParamTopicNTopics: $topicParamTopicNTopics " +
+      s"topicParamTopicNIter: $topicParamTopicNIter " +
+      s"topicParamTopicNMerge: $topicParamTopicNMerge " +
+      s"topicParamTopicMaxFreq: $topicParamTopicMaxFreq " +
       s"topicParamWord2vecSize: $topicParamWord2vecSize " +
       s"trainPath: $trainPath " +
       s"trainForestNum: $trainForestNum " +

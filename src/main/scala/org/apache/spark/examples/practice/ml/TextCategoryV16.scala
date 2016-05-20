@@ -22,6 +22,7 @@ import java.nio.file.{Files, Paths}
 import org.apache.log4j.Logger
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.RandomForestClassifier
+import org.apache.spark.ml.clustering.LDA
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{IndexToString, StringIndexer, _}
 import org.apache.spark.sql.{DataFrame, SQLContext}
@@ -112,11 +113,13 @@ object TextCategoryV16 {
         new IDF()
           .setInputCol(RAW_FEATURES)
           .setOutputCol(FEATURES)
-      case _ => /*new LDA()
-        .setK(parser.topicParamNTopics)
-        .setMaxIter(parser.topicParamNIter)
-        .setFeaturesCol("rawFeatures")
-        .setTopicDistributionCol("features")*/
+      case "topic" =>
+        new LDA()
+          .setK(parser.topicParamTopicNTopics)
+          .setMaxIter(parser.topicParamTopicNIter)
+          .setFeaturesCol(RAW_FEATURES)
+          .setTopicDistributionCol(FEATURES)
+      case "w2v" =>
         new Word2Vec()
           .setInputCol(RAW_FEATURES)
           .setOutputCol(FEATURES)
