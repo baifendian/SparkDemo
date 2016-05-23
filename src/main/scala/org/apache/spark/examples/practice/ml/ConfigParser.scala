@@ -34,13 +34,17 @@ class ConfigParser(filename: String) {
   val commonIndexModelPath: String = config.getProperty("common.indexmodel.path")
   val commonVecSpace: String = config.getProperty("common.vec_space")
   val commonTFNumber: Int = config.getProperty("common.tf_number") toInt
+  val commonNMerge: Int = config.getProperty("common.n_merge") toInt
 
   // === 加载 topic 主题空间需要的参数
   val topicParamTopicNTopics: Int = config.getProperty("topic_param.topic.n_topics") toInt
   val topicParamTopicNIter: Int = config.getProperty("topic_param.topic.n_iter") toInt
-  val topicParamTopicNMerge: Int = config.getProperty("topic_param.topic.n_merge") toInt
-  val topicParamTopicMaxFreq: Int = config.getProperty("topic_param.topic.max_freq") toInt
+
   val topicParamWord2vecSize: Int = config.getProperty("topic_param.word2vec.size") toInt
+  val topicParamWord2vecNIter: Int = config.getProperty("topic_param.word2vec.n_iter") toInt
+  val topicParamWord2vecNPartition: Int = config.getProperty("topic_param.word2vec.n_partition") toInt
+  val topicParamWord2vecWindowSize: Int = config.getProperty("topic_param.word2vec.window_size") toInt
+  val topicParamWord2vecMinCount: Int = config.getProperty("topic_param.word2vec.min_count") toInt
 
   // === 加载训练需要的配置信息 ===
   val trainPath: String = config.getProperty("train.path")
@@ -86,11 +90,14 @@ class ConfigParser(filename: String) {
       s"commonIndexModelPath: $commonIndexModelPath " +
       s"commonVecSpace: $commonVecSpace " +
       s"commonTFNumber: $commonTFNumber " +
+      s"commonNMerge: $commonNMerge " +
       s"topicParamTopicNTopics: $topicParamTopicNTopics " +
       s"topicParamTopicNIter: $topicParamTopicNIter " +
-      s"topicParamTopicNMerge: $topicParamTopicNMerge " +
-      s"topicParamTopicMaxFreq: $topicParamTopicMaxFreq " +
       s"topicParamWord2vecSize: $topicParamWord2vecSize " +
+      s"topicParamWord2vecNIter: $topicParamWord2vecNIter " +
+      s"topicParamWord2vecNPartition: $topicParamWord2vecNPartition " +
+      s"topicParamWord2vecWindowSize: $topicParamWord2vecWindowSize " +
+      s"topicParamWord2vecMinCount: $topicParamWord2vecMinCount " +
       s"trainPath: $trainPath " +
       s"trainForestNum: $trainForestNum " +
       s"predictZookeeper: $predictZookeeper " +

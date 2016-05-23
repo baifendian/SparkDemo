@@ -776,6 +776,9 @@ Triangle Counting: 三角计算是非常有意思的，它是要解决这种问�
 代码提交方式如下:
 
 ```
+# 由于 checkpoint 的不稳定性, 可以在启动的时候删除相关的目录
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ hadoop fs -rmr checkpoint/Kafka2Hdfs
+
 [qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.practice.streaming.Kafka2Hdfs \
                                         --master yarn \
                                         --deploy-mode cluster \
@@ -821,11 +824,11 @@ Found 10 items
 
 注意, 由于目前 ml package 的一些功能限制, 我们的示例做了简化, 后面 2.0 上线后再进行完善.
 
-训练我们用了 20W 的数据(我们在 git 上只提供了数据样例), 实际预测的时候是从 kafka 读取流数据进行预测, 预测了大概 400W+ 的数据.
+训练我们用了 586009 条记录的数据(我们在 git 上只提供了数据样例), 实际预测的时候是从 kafka 读取流数据进行预测, 预测了大概 2788289 条记录的数据.
 
-代码中用到的样例数据见: [样例数据](/src/main/resources/ml/sample_textcategory.txt)
-代码中用到的配置文件见: [相关配置](/src/main/resources/conf)
-代码中用到的词典见: [词典资源](/src/main/resources/dict)
+* 代码中用到的样例数据见: [样例数据](/src/main/resources/ml/sample_textcategory.txt)
+* 代码中用到的配置文件见: [相关配置](/src/main/resources/conf)
+* 代码中用到的词典见: [词典资源](/src/main/resources/dict)
 
 代码提交方式如下:
 
@@ -838,16 +841,25 @@ qifeng.dai@bgsbtsp0006-dqf sparkbook$ tar zcvf dict.tar.gz dict/
                                         --master yarn \
                                         --deploy-mode cluster \
                                         --driver-cores 1 \
-                                        --driver-memory 1024M \
+                                        --driver-memory 4096M \
                                         --num-executors 4 \
                                         --executor-cores 2 \
                                         --executor-memory 8192M \
-                                        --files textcategory_conf.properties#props,log4j-streaming.properties \
+                                        --files textcategory_conf.properties#props \
                                         --archives dict.tar.gz#dict \
-                                        --conf "spark.driver.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
-                                        --conf "spark.executor.extraJavaOptions=-XX:+UseConcMarkSweepGC -Dlog4j.configuration=log4j-streaming.properties" \
+                                        --conf "spark.driver.extraJavaOptions=-XX:+UseConcMarkSweepGC" \
+                                        --conf "spark.executor.extraJavaOptions=-XX:+UseConcMarkSweepGC" \
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
 
-# 输出结果
+# 运行情况 -- word 模型
+运行时长:
+Test Error:
 
+# 运行情况 -- topic 模型
+运行时长:
+Test Error:
+
+# 运行情况 -- word2vec 模型
+运行时长: 15mins, 11sec
+Test Error: 0.34153884335519025
 ```

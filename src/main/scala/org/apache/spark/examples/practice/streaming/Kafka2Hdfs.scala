@@ -79,6 +79,11 @@ object HdfsConnection {
       (null, null)
   }
 
+  // 删除 checkpoint(这是由于 checkpoint 的不稳定特性导致)
+  def removeCheckpoint(checkpoint: String): Unit = {
+    fileSystem.delete(new Path(checkpoint), true)
+  }
+
   // 获取 hdfs 的连接
   def getHdfsConnection(props: Properties): FSDataOutputStream = {
     this.synchronized {
@@ -153,7 +158,10 @@ object Kafka2Hdfs {
     val ssc = new StreamingContext(ctx, Seconds(10))
 
     // check point 特性不是很稳定, 慎用, driver 重启的时候会有问题!!!
-    // ssc.checkpoint("checkpoint/Kafka2Hdfs")
+    HdfsConnection.removeCheckpoint("checkpoint/Kafka2Hdfs")
+
+    // 设置 checkpoint
+    ssc.checkpoint("checkpoint/Kafka2Hdfs")
 
     ssc
   }

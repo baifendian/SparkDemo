@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
 import org.apache.log4j.Logger
+import org.apache.spark.annotation.Experimental
 import org.apache.spark.ml.classification.RandomForestClassifier
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature._
@@ -29,7 +30,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.mutable.ArrayBuffer
 
-@deprecated("will be use in spark 2.0")
+@Experimental("will be use in spark 2.0")
 object TextCategory {
   private val logger = Logger.getLogger(getClass.getName)
 

@@ -75,7 +75,7 @@ object TextCategoryV16 {
   }
 
   // 构造 pipeline
-  private def constructPipeline(parser: ConfigParser, sqlContext: SQLContext): Pipeline = {
+  private def constructPipeline(parser: ConfigParser, sqlContext: SQLContext, data: Option[DataFrame] = None): Pipeline = {
     // 对标题进行中文分词
     val tokenizer = new ChineseSegment(Option(parser.userDict)).
       setInputCol(TITLE).
@@ -119,12 +119,15 @@ object TextCategoryV16 {
           .setMaxIter(parser.topicParamTopicNIter)
           .setFeaturesCol(RAW_FEATURES)
           .setTopicDistributionCol(FEATURES)
-      case "w2v" =>
+      case _ =>
         new Word2Vec()
-          .setInputCol(RAW_FEATURES)
+          .setInputCol(STOPWORD_BRAND_WORDS)
           .setOutputCol(FEATURES)
           .setVectorSize(parser.topicParamWord2vecSize)
-          .setMinCount(0)
+          .setMaxIter(parser.topicParamWord2vecNIter)
+          .setNumPartitions(parser.topicParamWord2vecNPartition)
+          .setWindowSize(parser.topicParamWord2vecWindowSize)
+          .setMinCount(parser.topicParamWord2vecMinCount)
     }
 
     // 模型训练过程
@@ -133,20 +136,48 @@ object TextCategoryV16 {
       .setFeaturesCol(FEATURES)
       .setNumTrees(parser.trainForestNum)
 
-    new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
-      remover, hashingTF, space, /*labelIndexer,*/ rf /*, labelConverter*/))
+    parser.commonVecSpace match {
+      case c: String if (c == "word" || c == "topic") => {
+        if (data != None) {
+          val pl = new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
+            remover, hashingTF))
+          pl.fit(data.get).transform(data.get).show(20)
+        }
+        new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
+          remover, hashingTF, space, rf))
+      }
+      case _ => {
+        if (data != None) {
+          val pl = new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
+            remover))
+          pl.fit(data.get).transform(data.get).show(20)
+        }
+        new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
+          remover, space, rf))
+      }
+    }
   }
 
   def main(args: Array[String]): Unit = {
+    // 是不是 debug 模式
+    val debug = args.length match {
+      case len: Int if len > 0 => args(0) toBoolean
+      case _ => false
+    }
+
+    println(s"debug is: $debug")
+
     // 加载配置
     val parser: ConfigParser = ConfigParser()
 
-    logger.info(s"config info: ${parser.toString}")
+    println(s"config info: ${parser.toString}")
 
     // 初始化 SparkContext
     val conf = new SparkConf().setAppName("TextCategoryV16")
     val sc = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
+
+    import sqlContext.implicits._
 
     // 自定义函数, 注意 array 类型为 Seq, 不能为 Array
     sqlContext.udf.register("strArrayMerge", (str: String, array: Seq[String]) => str +: array)
@@ -157,7 +188,29 @@ object TextCategoryV16 {
       .setOutputCol(INDEXED_LABEL)
 
     // 加载训练数据
-    val rawTrainingDataFrame = sqlContext.read.json(parser.trainPath)
+    var rawTrainingDataFrame = sqlContext.read.json(parser.trainPath)
+
+    // 如果是 topic 模型, 需要对文本做一个 merge
+    if (parser.commonNMerge > 1) {
+      val m: Int = parser.commonNMerge
+      rawTrainingDataFrame = rawTrainingDataFrame
+        .map(x => (x.getAs[String]("category"), (x.getAs[String]("brand"), x.getAs[String]("title")))) // 获取类目, 品牌, 标题
+        .groupByKey() // 根据类目进行 groupby
+        .flatMap({ case (key, value) =>
+        for (w <- value.sliding(m, m)) yield (key, w)
+      }) // 对 品牌和标题 进行一定的切分
+        .map({ case (key, arrayValue) =>
+        val brands = ArrayBuffer[String]()
+        val titles = ArrayBuffer[String]()
+        for ((brand, title) <- arrayValue) {
+          brands += brand
+          titles += title
+        }
+        (key, brands.mkString(" "), titles.mkString(" "))
+      }) // 把品牌,标题放在一起
+        .toDF("category", "brand", "title")
+    }
+
     val labelModel = labelIndexer.fit(rawTrainingDataFrame)
     val trainingDataFrame = labelModel.transform(rawTrainingDataFrame)
 
@@ -172,7 +225,7 @@ object TextCategoryV16 {
     testDataFrame.printSchema()
 
     // 构造 pipeline, 训练模型
-    val pipeline = constructPipeline(parser, sqlContext)
+    val pipeline = constructPipeline(parser, sqlContext, if (debug == true) Some(trainingDataFrame) else None)
 
     println("model train")
     val model = pipeline.fit(trainingDataFrame)
