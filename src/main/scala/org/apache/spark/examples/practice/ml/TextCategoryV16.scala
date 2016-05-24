@@ -21,7 +21,7 @@ import java.nio.file.{Files, Paths}
 
 import org.apache.log4j.Logger
 import org.apache.spark.ml.Pipeline
-import org.apache.spark.ml.classification.RandomForestClassifier
+import org.apache.spark.ml.classification.{LogisticRegression, OneVsRest, RandomForestClassifier}
 import org.apache.spark.ml.clustering.LDA
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{IndexToString, StringIndexer, _}
@@ -46,6 +46,7 @@ object TextCategoryV16 {
   private val STOPWORD_BRAND_WORDS = "stopword_brand_words"
 
   private val RAW_FEATURES = "raw_features"
+  private val IDF_FEATURES = "idf_features"
   private val FEATURES = "features"
 
   private val INDEXED_LABEL = "indexedLabel"
@@ -67,7 +68,8 @@ object TextCategoryV16 {
     // 很多数据带了 "None", "NULL", " ", 需要把它去掉
     words += "None"
     words += "NULL"
-    words + " "
+    words += " "
+    words += "\t"
 
     println(s"load stop words: $count")
 
@@ -112,7 +114,7 @@ object TextCategoryV16 {
       case "word" =>
         new IDF()
           .setInputCol(RAW_FEATURES)
-          .setOutputCol(FEATURES)
+          .setOutputCol(IDF_FEATURES)
       case "topic" =>
         new LDA()
           .setK(parser.topicParamTopicNTopics)
@@ -131,29 +133,55 @@ object TextCategoryV16 {
     }
 
     // 模型训练过程
-    val rf = new RandomForestClassifier()
-      .setLabelCol(INDEXED_LABEL)
-      .setFeaturesCol(FEATURES)
-      .setNumTrees(parser.trainForestNum)
+    val alg = parser.commonAlg match {
+      case "rf" =>
+        new RandomForestClassifier()
+          .setLabelCol(INDEXED_LABEL)
+          .setFeaturesCol(FEATURES)
+          .setNumTrees(parser.rfTreesNum)
+      case _ => {
+        val c = new LogisticRegression()
+          .setRegParam(parser.lrRegParam)
+          .setElasticNetParam(parser.lrElasticNetParam)
+          .setMaxIter(parser.lrNIter)
+        new OneVsRest()
+          .setLabelCol(INDEXED_LABEL)
+          .setFeaturesCol(FEATURES)
+          .setClassifier(c)
+      }
+    }
 
     parser.commonVecSpace match {
       case c: String if (c == "word" || c == "topic") => {
         if (data != None) {
           val pl = new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
             remover, hashingTF))
-          pl.fit(data.get).transform(data.get).show(20)
+          println("training data debug information")
+          pl.fit(data.get).transform(data.get).show(100, false)
         }
-        new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
-          remover, hashingTF, space, rf))
+        if (c == "topic") {
+          new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
+            remover, hashingTF, space, alg))
+        }
+        else {
+          val selector = new ChiSqSelector()
+            .setNumTopFeatures(parser.tfidfFeaturesSelect)
+            .setFeaturesCol(IDF_FEATURES)
+            .setLabelCol(INDEXED_LABEL)
+            .setOutputCol(FEATURES)
+          new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
+            remover, hashingTF, space, selector, alg))
+        }
       }
       case _ => {
         if (data != None) {
           val pl = new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
             remover))
-          pl.fit(data.get).transform(data.get).show(20)
+          println("training data debug information")
+          pl.fit(data.get).transform(data.get).show(100, false)
         }
         new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
-          remover, space, rf))
+          remover, space, alg))
       }
     }
   }
@@ -179,8 +207,8 @@ object TextCategoryV16 {
 
     import sqlContext.implicits._
 
-    // 自定义函数, 注意 array 类型为 Seq, 不能为 Array
-    sqlContext.udf.register("strArrayMerge", (str: String, array: Seq[String]) => str +: array)
+    // 自定义函数, 注意 array 类型为 Seq, 不能为 Array, 之所以对 str 做切分, 是因为可能包含空格
+    sqlContext.udf.register("strArrayMerge", (str: String, array: Seq[String]) => str.split(" ") ++ array)
 
     // 数据先进行转换, 对分类进行转换
     val labelIndexer = new StringIndexer()
@@ -188,31 +216,36 @@ object TextCategoryV16 {
       .setOutputCol(INDEXED_LABEL)
 
     // 加载训练数据
-    var rawTrainingDataFrame = sqlContext.read.json(parser.trainPath)
+    val rawDataFrame = sqlContext.read.json(parser.trainPath)
 
     // 如果是 topic 模型, 需要对文本做一个 merge
-    if (parser.commonNMerge > 1) {
-      val m: Int = parser.commonNMerge
-      rawTrainingDataFrame = rawTrainingDataFrame
-        .map(x => (x.getAs[String]("category"), (x.getAs[String]("brand"), x.getAs[String]("title")))) // 获取类目, 品牌, 标题
-        .groupByKey() // 根据类目进行 groupby
-        .flatMap({ case (key, value) =>
-        for (w <- value.sliding(m, m)) yield (key, w)
-      }) // 对 品牌和标题 进行一定的切分
-        .map({ case (key, arrayValue) =>
-        val brands = ArrayBuffer[String]()
-        val titles = ArrayBuffer[String]()
-        for ((brand, title) <- arrayValue) {
-          brands += brand
-          titles += title
-        }
-        (key, brands.mkString(" "), titles.mkString(" "))
-      }) // 把品牌,标题放在一起
-        .toDF("category", "brand", "title")
+    val rawTrainingDataFrame = parser.commonNMerge match {
+      case x: Int if x > 1 => {
+        val m: Int = parser.commonNMerge
+        val partition: Int = parser.trainNPartition
+        rawDataFrame
+          .repartition(partition)
+          .map(x => (x.getAs[String]("category"), (x.getAs[String]("brand"), x.getAs[String]("title")))) // 获取类目, 品牌, 标题
+          .groupByKey() // 根据类目进行 groupby
+          .flatMap({ case (key, value) =>
+          for (w <- value.sliding(m, m)) yield (key, w)
+        }) // 对 品牌和标题 进行一定的切分
+          .map({ case (key, arrayValue) =>
+          val brands = ArrayBuffer[String]()
+          val titles = ArrayBuffer[String]()
+          for ((brand, title) <- arrayValue) {
+            brands += brand
+            titles += title
+          }
+          (key, brands.mkString(" "), titles.mkString(" "))
+        }) // 把品牌,标题放在一起
+          .toDF("category", "brand", "title")
+      }
+      case _ => rawDataFrame
     }
 
     val labelModel = labelIndexer.fit(rawTrainingDataFrame)
-    val trainingDataFrame = labelModel.transform(rawTrainingDataFrame)
+    val trainingDataFrame = labelModel.transform(rawTrainingDataFrame).repartition(parser.trainNPartition)
 
     println("training data schema")
     trainingDataFrame.printSchema()
@@ -244,11 +277,14 @@ object TextCategoryV16 {
 
     println("test result schema")
     testResult.printSchema()
-    testResult.show(100)
+    println("test result show")
+    testResult.show(100, false)
 
-    // 保存
-    println("test result save")
-    testResult.select(ID, BRAND, TITLE, CATEGORY, PREDICTED_LABEL).write.format("json").save(parser.testResultPath)
+    // 保存, 有些场景下可能不想保存
+    if (parser.testResultSave) {
+      println("test result save")
+      testResult.select(ID, BRAND, TITLE, CATEGORY, PREDICTED_LABEL).write.format("json").save(parser.testResultPath)
+    }
 
     // 评估分类的效果
     val evaluator = new MulticlassClassificationEvaluator()
@@ -260,6 +296,12 @@ object TextCategoryV16 {
     val accuracy = evaluator.evaluate(testResult)
 
     println("Test Error = " + (1.0 - accuracy))
+
+    // 对训练数据也做一个测试, 看看有没有过拟合现象
+    val trainRawTestResult: DataFrame = model.transform(labelModel.transform(rawDataFrame))
+    val trainResult = labelConverter.transform(trainRawTestResult)
+
+    println("Test Error on training data = " + (1.0 - evaluator.evaluate(trainResult)))
 
     // spark context stop
     sc.stop()

@@ -849,17 +849,39 @@ qifeng.dai@bgsbtsp0006-dqf sparkbook$ tar zcvf dict.tar.gz dict/
                                         --archives dict.tar.gz#dict \
                                         --conf "spark.driver.extraJavaOptions=-XX:+UseConcMarkSweepGC" \
                                         --conf "spark.executor.extraJavaOptions=-XX:+UseConcMarkSweepGC" \
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar true
+```
+
+我的调优结果如下(不同场景下, 读者可自行调优):
+
+-------------- | --------------- | ---------------
+向量空间/算法模型 | 随机森林(rf) | 逻辑回归(lr)
+     word       | Time: 02:23:36 Test Error: 0.65192 | Time: 00:31:22 Test Error: 0.49097
+     topic      | Time: 02:18:51 Test Error: 0.65052 | Time:  Test Error:
+     word2vec   | Time: 00:12:36 Test Error: 0.19002 | Time: 00:47:43 Test Error: 0.21358
+
+#### 3 计算用户留存率示例: [UserRetention](/src/main/scala/org/apache/spark/examples/practice/sql/UserRetention.scala)
+
+这里我们介绍一个在用户分析中常遇到的一个指标: "用户留存率分析", 数据样本来自我们内部自己构造的数据, 按天分区.
+
+分析结果将保存在 mongodb 中.
+
+* 代码中用到的样例数据见: [样例数据](/src/main/resources/useraction.txt)
+* 代码中用到的配置文件见: [相关配置](/src/main/resources/conf)
+
+代码提交方式如下:
+
+```
+[qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.practice.sql.UserRetention \
+                                        --master yarn \
+                                        --deploy-mode cluster \
+                                        --driver-cores 1 \
+                                        --driver-memory 1024M \
+                                        --num-executors 4 \
+                                        --executor-cores 2 \
+                                        --executor-memory 2048M \
+                                        --files userretention_conf.properties#props \
+                                        --conf "spark.driver.extraJavaOptions=-XX:+UseConcMarkSweepGC" \
+                                        --conf "spark.executor.extraJavaOptions=-XX:+UseConcMarkSweepGC" \
                                         spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
-
-# 运行情况 -- word 模型
-运行时长:
-Test Error:
-
-# 运行情况 -- topic 模型
-运行时长:
-Test Error:
-
-# 运行情况 -- word2vec 模型
-运行时长: 15mins, 11sec
-Test Error: 0.34153884335519025
 ```

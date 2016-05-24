@@ -35,6 +35,7 @@ class ConfigParser(filename: String) {
   val commonVecSpace: String = config.getProperty("common.vec_space")
   val commonTFNumber: Int = config.getProperty("common.tf_number") toInt
   val commonNMerge: Int = config.getProperty("common.n_merge") toInt
+  val commonAlg = config.getProperty("common.alg")
 
   // === 加载 topic 主题空间需要的参数
   val topicParamTopicNTopics: Int = config.getProperty("topic_param.topic.n_topics") toInt
@@ -48,7 +49,18 @@ class ConfigParser(filename: String) {
 
   // === 加载训练需要的配置信息 ===
   val trainPath: String = config.getProperty("train.path")
-  val trainForestNum: Int = config.getProperty("train.forest.num") toInt
+  val trainNPartition: Int = config.getProperty("train.n_partition") toInt
+
+  // === tf-idf 的参数
+  val tfidfFeaturesSelect: Int = config.getProperty("tfidf.features.select") toInt
+
+  // === 随机森林模型的参数
+  val rfTreesNum: Int = config.getProperty("rf.trees.num") toInt
+
+  // === LR 的参数
+  val lrNIter = config.getProperty("lr.n_iter") toInt
+  val lrRegParam = config.getProperty("lr.regparam") toDouble
+  val lrElasticNetParam = config.getProperty("lr.elastic_net_param") toDouble
 
   // === 加载预测需要的配置信息 ===
   val predictZookeeper: String = config.getProperty("predict.zookeeper")
@@ -61,6 +73,7 @@ class ConfigParser(filename: String) {
 
   // === 文件预测的方式 ===
   val testFilePath = config.getProperty("test.path")
+  val testResultSave = config.getProperty("test.result.save") toBoolean
   val testResultPath = config.getProperty("test.result.path")
 
   // === 加载自定义词典 ===
@@ -91,6 +104,7 @@ class ConfigParser(filename: String) {
       s"commonVecSpace: $commonVecSpace " +
       s"commonTFNumber: $commonTFNumber " +
       s"commonNMerge: $commonNMerge " +
+      s"commonAlg: $commonAlg " +
       s"topicParamTopicNTopics: $topicParamTopicNTopics " +
       s"topicParamTopicNIter: $topicParamTopicNIter " +
       s"topicParamWord2vecSize: $topicParamWord2vecSize " +
@@ -99,7 +113,12 @@ class ConfigParser(filename: String) {
       s"topicParamWord2vecWindowSize: $topicParamWord2vecWindowSize " +
       s"topicParamWord2vecMinCount: $topicParamWord2vecMinCount " +
       s"trainPath: $trainPath " +
-      s"trainForestNum: $trainForestNum " +
+      s"trainNPartition: $trainNPartition " +
+      s"tfidfFeaturesSelect: $tfidfFeaturesSelect " +
+      s"rfTreesNum: $rfTreesNum " +
+      s"lrNIter: $lrNIter " +
+      s"lrRegParam: $lrRegParam " +
+      s"lrElasticNetParam: $lrElasticNetParam " +
       s"predictZookeeper: $predictZookeeper " +
       s"predictGroupid: $predictGroupid " +
       s"predictTopics: $predictTopics " +
@@ -107,6 +126,7 @@ class ConfigParser(filename: String) {
       s"predictRedisHost: $predictRedisHost" +
       s"predictRedisPort: $predictRedisPort " +
       s"testFilePath: $testFilePath " +
+      s"testResultSave: $testResultSave " +
       s"testResultPath: $testResultPath " +
       s"""userDict: ${userDict.mkString(",")} """ +
       s"preprocessMedicineile: $preprocessMedicineFile " +
