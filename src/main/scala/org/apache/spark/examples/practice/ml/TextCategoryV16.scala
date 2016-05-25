@@ -77,21 +77,21 @@ object TextCategoryV16 {
   }
 
   // 构造 pipeline
-  private def constructPipeline(parser: ConfigParser, sqlContext: SQLContext, data: Option[DataFrame] = None): Pipeline = {
+  private def constructPipeline(sqlContext: SQLContext, data: Option[DataFrame] = None): Pipeline = {
     val stages = ArrayBuffer[PipelineStage]()
 
     // 对标题进行中文分词
-    val tokenizer = new ChineseSegment(Option(parser.userDict)).
+    val tokenizer = new ChineseSegment(Option(Params.userDict)).
       setInputCol(TITLE).
       setOutputCol(TITLE_WORDS)
 
     // 处理单位词信息, 之后对数词也做一下过滤
-    val quantifier = new QuantifierProcess(parser.preprocessQuantifierFile).
+    val quantifier = new QuantifierProcess(Params.preprocessQuantifierFile).
       setInputCol(TITLE_WORDS).
       setOutputCol(QUAN_TITLE_WORDS)
 
     // 对药品词信息做一下处理
-    val medicine = new MedicineProcess(parser.preprocessMedicineFile).
+    val medicine = new MedicineProcess(Params.preprocessMedicineFile).
       setInputCol(QUAN_TITLE_WORDS).
       setOutputCol(MED_QUAN_TITLE_WORDS)
 
@@ -103,20 +103,32 @@ object TextCategoryV16 {
     val remover = new StopWordsRemover()
       .setInputCol(BRAND_WORDS)
       .setOutputCol(STOPWORD_BRAND_WORDS)
-      .setStopWords(loadStopWords(parser.preprocessStopFile))
+      .setStopWords(loadStopWords(Params.preprocessStopFile))
 
     stages +=(tokenizer, quantifier, medicine, sqlTrans, remover)
 
     // 计算 TF
-    val hashingTF = new HashingTF()
-      .setInputCol(STOPWORD_BRAND_WORDS)
-      .setOutputCol(RAW_FEATURES)
-      .setNumFeatures(parser.commonTFNumber)
+    val tf = Params.commonTF match {
+      case "hash" =>
+        new HashingTF()
+          .setInputCol(STOPWORD_BRAND_WORDS)
+          .setOutputCol(RAW_FEATURES)
+          .setNumFeatures(Params.hashTFNumber)
+      case "countvec" =>
+        new CountVectorizer()
+          .setInputCol(STOPWORD_BRAND_WORDS)
+          .setOutputCol(RAW_FEATURES)
+          .setVocabSize(Params.countvecVocabSize)
+          .setMinDF(Params.countvecMinDF)
+      case _ => {
+        throw new Exception(s"tf not valid: ${Params.commonTF}")
+      }
+    }
 
     // 构建向量空间
-    val space = parser.commonVecSpace match {
+    val space = Params.commonVecSpace match {
       case "word" =>
-        stages +=(hashingTF,
+        stages +=(tf,
           new IDF()
             .setInputCol(RAW_FEATURES)
             .setOutputCol(IDF_FEATURES),
@@ -124,41 +136,44 @@ object TextCategoryV16 {
             .setFeaturesCol(IDF_FEATURES)
             .setLabelCol(INDEXED_LABEL)
             .setOutputCol(FEATURES)
-            .setNumTopFeatures(parser.tfidfFeaturesSelect)
+            .setNumTopFeatures(Params.tfidfFeaturesSelect)
           )
       case "topic" =>
-        stages +=(hashingTF,
+        stages +=(tf,
           new LDA()
             .setFeaturesCol(RAW_FEATURES)
             .setTopicDistributionCol(FEATURES)
-            .setK(parser.topicParamTopicNTopics)
-            .setMaxIter(parser.topicParamTopicNIter)
+            .setK(Params.topicParamTopicNTopics)
+            .setMaxIter(Params.topicParamTopicNIter)
           )
-      case _ =>
+      case "w2v" =>
         stages +=
           new Word2Vec()
             .setInputCol(STOPWORD_BRAND_WORDS)
             .setOutputCol(FEATURES)
-            .setVectorSize(parser.topicParamWord2vecSize)
-            .setMaxIter(parser.topicParamWord2vecNIter)
-            .setNumPartitions(parser.topicParamWord2vecNPartition)
-            .setWindowSize(parser.topicParamWord2vecWindowSize)
-            .setMinCount(parser.topicParamWord2vecMinCount)
+            .setVectorSize(Params.topicParamWord2vecSize)
+            .setMaxIter(Params.topicParamWord2vecNIter)
+            .setNumPartitions(Params.topicParamWord2vecNPartition)
+            .setWindowSize(Params.topicParamWord2vecWindowSize)
+            .setMinCount(Params.topicParamWord2vecMinCount)
+      case _ => {
+        throw new Exception(s"space not valid: ${Params.commonVecSpace}")
+      }
     }
 
     // 构建模型
-    val alg = parser.commonAlg match {
+    val alg = Params.commonAlg match {
       case "rf" =>
         stages +=
           new RandomForestClassifier()
             .setLabelCol(INDEXED_LABEL)
             .setFeaturesCol(FEATURES)
-            .setNumTrees(parser.rfTreesNum)
-      case _ => {
+            .setNumTrees(Params.rfTreesNum)
+      case "lr" => {
         val c = new LogisticRegression()
-          .setRegParam(parser.lrRegParam)
-          .setElasticNetParam(parser.lrElasticNetParam)
-          .setMaxIter(parser.lrNIter)
+          .setRegParam(Params.lrRegParam)
+          .setElasticNetParam(Params.lrElasticNetParam)
+          .setMaxIter(Params.lrNIter)
           .setLabelCol(INDEXED_LABEL)
           .setFeaturesCol(FEATURES)
 
@@ -168,16 +183,19 @@ object TextCategoryV16 {
             .setFeaturesCol(FEATURES)
             .setClassifier(c)
       }
+      case _ => {
+        throw new Exception(s"alg not valid: ${Params.commonAlg}")
+      }
     }
 
     // debug 部分
     if (data != None) {
       println("training data debug information")
 
-      val pl = parser.commonVecSpace match {
+      val pl = Params.commonVecSpace match {
         case c: String if (c == "word" || c == "topic") =>
           new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
-            remover, hashingTF))
+            remover, tf))
         case _ =>
           new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
             remover))
@@ -199,9 +217,7 @@ object TextCategoryV16 {
     println(s"debug is: $debug")
 
     // 加载配置
-    val parser: ConfigParser = ConfigParser()
-
-    println(s"config info: ${parser.toString}")
+    println(s"params info: ${Params.toString}")
 
     // 初始化 SparkContext
     val conf = new SparkConf().setAppName("TextCategoryV16")
@@ -219,13 +235,13 @@ object TextCategoryV16 {
       .setOutputCol(INDEXED_LABEL)
 
     // 加载训练数据
-    val rawDataFrame = sqlContext.read.json(parser.trainPath)
+    val rawDataFrame = sqlContext.read.json(Params.trainPath)
 
     // 如果是 topic 模型, 需要对文本做一个 merge
-    val rawTrainingDataFrame = parser.commonNMerge match {
+    val rawTrainingDataFrame = Params.commonNMerge match {
       case x: Int if x > 1 => {
-        val m: Int = parser.commonNMerge
-        val partition: Int = parser.trainNPartition
+        val m: Int = Params.commonNMerge
+        val partition: Int = Params.trainNPartition
         rawDataFrame
           .repartition(partition)
           .map(x => (x.getAs[String]("category"), (x.getAs[String]("brand"), x.getAs[String]("title")))) // 获取类目, 品牌, 标题
@@ -248,20 +264,20 @@ object TextCategoryV16 {
     }
 
     val labelModel = labelIndexer.fit(rawTrainingDataFrame)
-    val trainingDataFrame = labelModel.transform(rawTrainingDataFrame).repartition(parser.trainNPartition)
+    val trainingDataFrame = labelModel.transform(rawTrainingDataFrame).repartition(Params.trainNPartition)
 
     println("training data schema")
     trainingDataFrame.printSchema()
 
     // 加载测试数据
-    val rawTestDataFrame = sqlContext.read.json(parser.testFilePath)
+    val rawTestDataFrame = sqlContext.read.json(Params.testFilePath)
     val testDataFrame = labelModel.transform(rawTestDataFrame)
 
     println("test data schema")
     testDataFrame.printSchema()
 
     // 构造 pipeline, 训练模型
-    val pipeline = constructPipeline(parser, sqlContext, if (debug == true) Some(trainingDataFrame) else None)
+    val pipeline = constructPipeline(sqlContext, if (debug == true) Some(trainingDataFrame) else None)
 
     println("model train")
     val model = pipeline.fit(trainingDataFrame)
@@ -284,9 +300,9 @@ object TextCategoryV16 {
     testResult.show(100, false)
 
     // 保存, 有些场景下可能不想保存
-    if (parser.testResultSave) {
+    if (Params.testResultSave) {
       println("test result save")
-      testResult.select(ID, BRAND, TITLE, CATEGORY, PREDICTED_LABEL).write.format("json").save(parser.testResultPath)
+      testResult.select(ID, BRAND, TITLE, CATEGORY, PREDICTED_LABEL).write.format("json").save(Params.testResultPath)
     }
 
     // 评估分类的效果
