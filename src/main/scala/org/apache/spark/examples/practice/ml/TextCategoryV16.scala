@@ -20,11 +20,11 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
 import org.apache.log4j.Logger
-import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.{LogisticRegression, OneVsRest, RandomForestClassifier}
 import org.apache.spark.ml.clustering.LDA
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{IndexToString, StringIndexer, _}
+import org.apache.spark.ml.{Pipeline, PipelineStage}
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -78,6 +78,8 @@ object TextCategoryV16 {
 
   // 构造 pipeline
   private def constructPipeline(parser: ConfigParser, sqlContext: SQLContext, data: Option[DataFrame] = None): Pipeline = {
+    val stages = ArrayBuffer[PipelineStage]()
+
     // 对标题进行中文分词
     val tokenizer = new ChineseSegment(Option(parser.userDict)).
       setInputCol(TITLE).
@@ -103,87 +105,88 @@ object TextCategoryV16 {
       .setOutputCol(STOPWORD_BRAND_WORDS)
       .setStopWords(loadStopWords(parser.preprocessStopFile))
 
+    stages +=(tokenizer, quantifier, medicine, sqlTrans, remover)
+
     // 计算 TF
     val hashingTF = new HashingTF()
       .setInputCol(STOPWORD_BRAND_WORDS)
       .setOutputCol(RAW_FEATURES)
       .setNumFeatures(parser.commonTFNumber)
 
-    // 构建向量(对 word 的形式构建 tf-idf, 对于 topic 的形式, 采用 lda 处理)
+    // 构建向量空间
     val space = parser.commonVecSpace match {
       case "word" =>
-        new IDF()
-          .setInputCol(RAW_FEATURES)
-          .setOutputCol(IDF_FEATURES)
+        stages +=(hashingTF,
+          new IDF()
+            .setInputCol(RAW_FEATURES)
+            .setOutputCol(IDF_FEATURES),
+          new ChiSqSelector()
+            .setFeaturesCol(IDF_FEATURES)
+            .setLabelCol(INDEXED_LABEL)
+            .setOutputCol(FEATURES)
+            .setNumTopFeatures(parser.tfidfFeaturesSelect)
+          )
       case "topic" =>
-        new LDA()
-          .setK(parser.topicParamTopicNTopics)
-          .setMaxIter(parser.topicParamTopicNIter)
-          .setFeaturesCol(RAW_FEATURES)
-          .setTopicDistributionCol(FEATURES)
+        stages +=(hashingTF,
+          new LDA()
+            .setFeaturesCol(RAW_FEATURES)
+            .setTopicDistributionCol(FEATURES)
+            .setK(parser.topicParamTopicNTopics)
+            .setMaxIter(parser.topicParamTopicNIter)
+          )
       case _ =>
-        new Word2Vec()
-          .setInputCol(STOPWORD_BRAND_WORDS)
-          .setOutputCol(FEATURES)
-          .setVectorSize(parser.topicParamWord2vecSize)
-          .setMaxIter(parser.topicParamWord2vecNIter)
-          .setNumPartitions(parser.topicParamWord2vecNPartition)
-          .setWindowSize(parser.topicParamWord2vecWindowSize)
-          .setMinCount(parser.topicParamWord2vecMinCount)
+        stages +=
+          new Word2Vec()
+            .setInputCol(STOPWORD_BRAND_WORDS)
+            .setOutputCol(FEATURES)
+            .setVectorSize(parser.topicParamWord2vecSize)
+            .setMaxIter(parser.topicParamWord2vecNIter)
+            .setNumPartitions(parser.topicParamWord2vecNPartition)
+            .setWindowSize(parser.topicParamWord2vecWindowSize)
+            .setMinCount(parser.topicParamWord2vecMinCount)
     }
 
-    // 模型训练过程
+    // 构建模型
     val alg = parser.commonAlg match {
       case "rf" =>
-        new RandomForestClassifier()
-          .setLabelCol(INDEXED_LABEL)
-          .setFeaturesCol(FEATURES)
-          .setNumTrees(parser.rfTreesNum)
+        stages +=
+          new RandomForestClassifier()
+            .setLabelCol(INDEXED_LABEL)
+            .setFeaturesCol(FEATURES)
+            .setNumTrees(parser.rfTreesNum)
       case _ => {
         val c = new LogisticRegression()
           .setRegParam(parser.lrRegParam)
           .setElasticNetParam(parser.lrElasticNetParam)
           .setMaxIter(parser.lrNIter)
-        new OneVsRest()
           .setLabelCol(INDEXED_LABEL)
           .setFeaturesCol(FEATURES)
-          .setClassifier(c)
+
+        stages +=
+          new OneVsRest()
+            .setLabelCol(INDEXED_LABEL)
+            .setFeaturesCol(FEATURES)
+            .setClassifier(c)
       }
     }
 
-    parser.commonVecSpace match {
-      case c: String if (c == "word" || c == "topic") => {
-        if (data != None) {
-          val pl = new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
+    // debug 部分
+    if (data != None) {
+      println("training data debug information")
+
+      val pl = parser.commonVecSpace match {
+        case c: String if (c == "word" || c == "topic") =>
+          new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
             remover, hashingTF))
-          println("training data debug information")
-          pl.fit(data.get).transform(data.get).show(100, false)
-        }
-        if (c == "topic") {
+        case _ =>
           new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
-            remover, hashingTF, space, alg))
-        }
-        else {
-          val selector = new ChiSqSelector()
-            .setNumTopFeatures(parser.tfidfFeaturesSelect)
-            .setFeaturesCol(IDF_FEATURES)
-            .setLabelCol(INDEXED_LABEL)
-            .setOutputCol(FEATURES)
-          new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
-            remover, hashingTF, space, selector, alg))
-        }
-      }
-      case _ => {
-        if (data != None) {
-          val pl = new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
             remover))
-          println("training data debug information")
-          pl.fit(data.get).transform(data.get).show(100, false)
-        }
-        new Pipeline().setStages(Array(tokenizer, quantifier, medicine, sqlTrans,
-          remover, space, alg))
       }
+
+      pl.fit(data.get).transform(data.get).show(100, false)
     }
+
+    new Pipeline().setStages(stages toArray)
   }
 
   def main(args: Array[String]): Unit = {

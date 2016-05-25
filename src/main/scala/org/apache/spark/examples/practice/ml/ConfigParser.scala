@@ -123,7 +123,7 @@ class ConfigParser(filename: String) {
       s"predictGroupid: $predictGroupid " +
       s"predictTopics: $predictTopics " +
       s"predictNumStreams: $predictNumStreams " +
-      s"predictRedisHost: $predictRedisHost" +
+      s"predictRedisHost: $predictRedisHost " +
       s"predictRedisPort: $predictRedisPort " +
       s"testFilePath: $testFilePath " +
       s"testResultSave: $testResultSave " +
