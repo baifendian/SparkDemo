@@ -18,8 +18,13 @@ package org.apache.spark.examples.practice.sql
 import java.text.SimpleDateFormat
 import java.util.{Calendar, Date, GregorianCalendar}
 
+import com.mongodb.casbah.commons.MongoDBObject
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.log4j.Logger
-import org.apache.spark.sql.SaveMode
+import org.apache.spark.sql.hive.HiveContext
+import org.apache.spark.sql.{DataFrame, SaveMode}
+import org.apache.spark.storage.StorageLevel
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**
@@ -46,6 +51,11 @@ object UserRetention {
   private val GID = "gid"
   private val DATE = "date"
 
+  /**
+    *
+    * @param args
+    * @return
+    */
   private def getDays(args: Array[String]): (String, Array[String]) = {
     // 获取当前要计算的日期
     val format = new SimpleDateFormat("yyyy-MM-dd")
@@ -85,6 +95,101 @@ object UserRetention {
     (format.format(statDate), days toArray)
   }
 
+  /**
+    * 建表, 设置环境变量
+    *
+    * @param hiveSqlContext
+    */
+  private def init(statDay: String, hiveSqlContext: HiveContext): Unit = {
+    logger.info(s"create table: ${Params.hiveAlluserCreateTable}")
+    hiveSqlContext.sql(Params.hiveAlluserCreateTable)
+
+    logger.info(s"create table: ${Params.hiveNewuserCreateTable}")
+    hiveSqlContext.sql(Params.hiveNewuserCreateTable)
+
+    logger.info(s"delete table data in ${statDay}")
+    if (Params.hiveStatdayDelete) {
+      val conf: Configuration = new Configuration()
+      val fileSystem: FileSystem = FileSystem.get(conf)
+
+      fileSystem.delete(new Path(s"${Params.hiveWarehouseDir}/${Params.hiveAlluserCreateTable}/${DATE}=${statDay}"), true)
+      fileSystem.delete(new Path(s"${Params.hiveWarehouseDir}/${Params.hiveNewuserCreateTable}/${DATE}=${statDay}"), true)
+    }
+
+    // 需要动态 partition
+    hiveSqlContext.setConf("hive.exec.dynamic.partition", "true")
+    hiveSqlContext.setConf("hive.exec.dynamic.partition.mode", "nonstrict")
+  }
+
+  /**
+    * 显示一些调试信息
+    *
+    * @param data
+    * @param desc
+    */
+  private def debugInfo(data: DataFrame, desc: String): Unit = {
+    println(desc)
+    data.printSchema()
+    data.show(20, false)
+  }
+
+  /**
+    * 计算用户
+    *
+    * @param hiveSqlContext
+    * @param statDay
+    * @param rawDF
+    * @param allUserDF
+    */
+  private def computeCurrentAllAndNewUser(hiveSqlContext: HiveContext, statDay: String, rawDF: DataFrame, allUserDF: DataFrame): Unit = {
+    import hiveSqlContext.implicits._
+
+    // 生成当前的 "所有用户"
+    val currentAllUserDF = rawDF.unionAll(allUserDF).distinct()
+      .map(r => (r.getAs[String](APPKEY), r.getAs[String](GID), statDay))
+      .toDF(APPKEY, GID, DATE)
+
+    debugInfo(currentAllUserDF, "current all user...")
+
+    currentAllUserDF.write.mode(SaveMode.Append).partitionBy(DATE).saveAsTable(Params.hiveAlluserTable)
+
+    // 生成当前的 "新增用户"
+    val currentNewUserDF = rawDF.distinct().except(allUserDF)
+      .map(r => (r.getAs[String](APPKEY), r.getAs[String](GID), statDay))
+      .toDF(APPKEY, GID, DATE)
+
+    debugInfo(currentNewUserDF, "current new user...")
+
+    currentNewUserDF.write.mode(SaveMode.Append).partitionBy(DATE).saveAsTable(Params.hiveNewuserTable)
+  }
+
+  /**
+    * 保留到 mongodb
+    *
+    * @param r
+    * @param baseDay : 基准日期
+    * @param statDay : 要统计的对象日期
+    */
+  private def saveMongodb(r: DataFrame, baseDay: String, statDay: String): Unit = {
+    r.foreachPartition {
+      partitionOfRecords =>
+        val connection = MongoDBConnection.getInstance
+        partitionOfRecords.foreach(
+          record => {
+            val appkey = record.getAs[String](0)
+            val bc = record.getAs[Long](1)
+            val rc = record.getAs[Long](2)
+
+            val query = MongoDBObject(APPKEY -> appkey, "baseDay" -> baseDay, "statDay" -> statDay)
+            val obj = MongoDBObject(APPKEY -> appkey, "baseDay" -> baseDay, "statDay" -> statDay,
+              "bc" -> bc, "rc" -> rc, "ratio" -> rc * 1.0 / bc)
+
+            connection.collConn.update(query, obj, upsert = true)
+          }
+        )
+    }
+  }
+
   def main(args: Array[String]): Unit = {
     // 显示一下参数信息
     logger.info(s"params info: ${Params.toString}")
@@ -108,69 +213,57 @@ object UserRetention {
     val sc = new SparkContext(conf)
     val hiveSqlContext = new org.apache.spark.sql.hive.HiveContext(sc)
 
-    import hiveSqlContext.implicits._
-
-    // 建表语句
-    logger.info(s"create table: ${Params.hiveAlluserCreateTable}")
-    hiveSqlContext.sql(Params.hiveAlluserCreateTable)
-
-    logger.info(s"create table: ${Params.hiveNewuserCreateTable}")
-    hiveSqlContext.sql(Params.hiveNewuserCreateTable)
+    // 初始化
+    init(statDay, hiveSqlContext)
 
     // 读取 hdfs 中的原始数据
     logger.info(s"hdfs path: ${Params.sourcedataDir}/${statDay}")
-    val rawDF = hiveSqlContext.read.json(s"${Params.sourcedataDir}/${statDay}").select(APPKEY, GID).persist()
 
-    println("raw json data schema")
-    rawDF.printSchema()
+    val rawDF0 = hiveSqlContext.read.json(s"${Params.sourcedataDir}/${statDay}").select(APPKEY, GID)
+    val rawDF = rawDF0.repartition(Params.sourcedataPartition, rawDF0(APPKEY), rawDF0(GID)).persist(StorageLevel.MEMORY_AND_DISK)
+
+    debugInfo(rawDF, "raw json data...")
 
     // 读取 hive table 中的所有用户数据
-    val allUserDF = hiveSqlContext.sql(s"select ${APPKEY}, ${GID} from ${Params.hiveAlluserTable} where date=${preStatDay}").persist()
+    val sql = s"select ${APPKEY}, ${GID} from ${Params.hiveAlluserTable} where date=${preStatDay}"
 
-    println("all user table schema")
-    allUserDF.printSchema()
+    logger.info(s"get all user sql: ${sql}")
 
-    // 生成当前的 "所有用户" 放在 hive table 中
-    val currentAllUserDF = rawDF.unionAll(allUserDF).distinct()
-      .map(r => (r.getAs[String](APPKEY), r.getAs[String](GID), statDay))
-      .toDF(APPKEY, GID, DATE)
+    val allUserDF = hiveSqlContext.sql(sql).persist(StorageLevel.MEMORY_AND_DISK)
 
-    println("current all user schema")
-    currentAllUserDF.printSchema()
+    debugInfo(allUserDF, "all user table...")
 
-    currentAllUserDF.write.mode(SaveMode.Append).format("parquet").saveAsTable(Params.hiveAlluserTable)
-
-    // 生成当前的 "新增用户" 放在 hive table 中
-    val currentNewUserDF = rawDF.join(allUserDF)
-
-    println("current new user schema")
-    currentNewUserDF.printSchema()
-
-    currentNewUserDF.write.mode(SaveMode.Append).format("parquet").saveAsTable(Params.hiveNewuserTable)
-
-    // 计算留存率放在 mongodb 中
-    rawDF.registerTempTable("raw_table")
+    // 生成当前的 "所有用户" 和 "新用户" 放在 hive table 中
+    computeCurrentAllAndNewUser(hiveSqlContext, statDay, rawDF, allUserDF)
 
     for (d <- computeDays) {
       println(s"compute day: ${d}")
 
       // 得到新用户的情况
       val baseSQL =
-        s"""select appkey, gid, count(0) as count from ${Params.hiveNewuserTable} where date="${statDay}" """
+        s"""select ${APPKEY}, ${GID} from ${Params.hiveNewuserTable} where date="${d}""""
       val baseDF = hiveSqlContext.sql(baseSQL)
 
+      debugInfo(baseDF, "baseDF...")
+
       // 得到留存用户的情况
-      val retenSQL =
-        s"""select t.appkey as appkey, t.gid as gid, count(0) as count from (" +
-        s"select t1.appkey, t1.gid, t2.appkey as s from ${Params.hiveNewuserTable} as t1 left outer join raw_table as t2 " +
-        s"on t1.appkey = t2.appkey and t1.gid = t2.gid and t1.date="${statDay}" and t2.date="${statDay}") as t " +
-        s"where t.s is NULL group by appkey, gid"""
-      val retenDF = hiveSqlContext.sql(retenSQL)
+      val retenDF = baseDF.intersect(rawDF)
 
-      baseDF.join(retenDF, Array[String]("appkey", "gid")).show(100, false)
+      debugInfo(retenDF, "rentenDF...")
 
-      // 保存到 mongodb 中, 供查询
+      // 计算留存率
+      val baseGroupDF = baseDF.groupBy(APPKEY).count()
+      val retenGroupDF = retenDF.groupBy(APPKEY).count()
 
+      debugInfo(baseGroupDF, "baseDF group by...")
+      debugInfo(retenGroupDF, "retenDF group by...")
+
+      val r = baseGroupDF.join(retenGroupDF, Array(APPKEY)) // inner join
+
+      debugInfo(r, "result...")
+
+      // 保留到 mongodb
+      saveMongodb(r, d, statDay)
     }
 
     sc.stop()

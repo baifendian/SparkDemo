@@ -15,15 +15,9 @@
   */
 package org.apache.spark.examples.practice.sql
 
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.{Date, Properties}
-
 import com.mongodb.casbah.MongoClient
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FSDataOutputStream, FileSystem, Path}
+import com.mongodb.casbah.commons.MongoDBObject
 import org.apache.log4j.Logger
-import org.apache.spark.examples.practice.streaming.HdfsConnection._
 
 class MongoDBConnection(host: String, port: Int, db: String, collection: String) {
   val logger = Logger.getLogger(getClass.getName)
@@ -36,6 +30,8 @@ class MongoDBConnection(host: String, port: Int, db: String, collection: String)
 
   val dbConn = mongoClient(db)
   val collConn = dbConn(collection)
+
+  collConn.createIndex(MongoDBObject("appkey" -> true, "baseDay" -> true, "statDay" -> true))
 }
 
 object MongoDBConnection {

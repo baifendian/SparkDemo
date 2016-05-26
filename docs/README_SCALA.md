@@ -862,7 +862,7 @@ qifeng.dai@bgsbtsp0006-dqf sparkbook$ tar zcvf dict.tar.gz dict/
 
 #### 3 计算用户留存率示例: [UserRetention](/src/main/scala/org/apache/spark/examples/practice/sql/UserRetention.scala)
 
-这里我们介绍一个在用户分析中常遇到的一个指标: "用户留存率分析", 数据样本来自我们内部自己构造的数据, 按天分区.
+这里我们介绍一个在用户分析中常遇到的一个指标: "用户留存率分析", 数据样本来自我们内部自己构造的数据, 按天分区(抽取了 2016-03 月份的数据).
 
 分析结果将保存在 mongodb 中.
 
@@ -877,14 +877,15 @@ qifeng.dai@bgsbtsp0006-dqf sparkbook$ tar zcvf dict.tar.gz dict/
                                         --master yarn \
                                         --deploy-mode cluster \
                                         --driver-cores 1 \
-                                        --driver-memory 1024M \
+                                        --driver-memory 2048M \
                                         --num-executors 4 \
                                         --executor-cores 2 \
-                                        --executor-memory 2048M \
+                                        --executor-memory 4096M \
                                         --jars /home/bfd_hz/spark/lib/datanucleus-api-jdo-3.2.6.jar,/home/bfd_hz/spark/lib/datanucleus-core-3.2.10.jar,/home/bfd_hz/spark/lib/datanucleus-rdbms-3.2.9.jar \
-                                        --files /home/bfd_hz/spark/conf/hive-site.xml \
-                                        --files userretention_conf.properties#props \
+                                        --files /home/bfd_hz/spark/conf/hive-site.xml,userretention_conf.properties#props \
                                         --conf "spark.driver.extraJavaOptions=-XX:+UseConcMarkSweepGC" \
                                         --conf "spark.executor.extraJavaOptions=-XX:+UseConcMarkSweepGC" \
-                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar
+                                        spark-examples-1.0-SNAPSHOT-hadoop2.6.0.jar $days
+
+# Note: 我这里的 days 是 "2016-03-01~2016-03-31"
 ```

@@ -22,6 +22,10 @@ object Params {
   val days = ConfigParser.getInstance.getInt("days")
 
   val sourcedataDir = ConfigParser.getInstance.getString("sourcedata.dir")
+  val sourcedataPartition = ConfigParser.getInstance.getInt("sourcedata.partition")
+
+  val hiveStatdayDelete = ConfigParser.getInstance.getBoolean("hive.statday.delete")
+  val hiveWarehouseDir = ConfigParser.getInstance.getString("hive.warehousedir")
 
   val hiveAlluserTable = ConfigParser.getInstance.getString("hive.alluser.table")
   val hiveAlluserCreateTable = ConfigParser.getInstance.getString("hive.alluser.createtable")
