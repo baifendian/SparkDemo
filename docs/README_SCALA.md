@@ -854,11 +854,11 @@ qifeng.dai@bgsbtsp0006-dqf sparkbook$ tar zcvf dict.tar.gz dict/
 
 我的调优结果如下(不同场景下, 读者可自行调优):
 
------------- | ------------- | ------------- | -------------
- 向量空间/算法模型 | 随机森林(rf) | 逻辑回归(lr) | 朴素贝叶斯(nb)
- word | Time: 02:23:36 Test Error: 0.65192 | Time: 00:31:22 Test Error: 0.49097 |
- topic | Time: 02:18:51 Test Error: 0.65052 | - |
- word2vec | Time: 00:15:04 Test Error: 0.16285 | Time: 00:47:43 Test Error: 0.21358 |
+| 向量空间/算法模型 | 随机森林(rf) | 逻辑回归(lr) | 朴素贝叶斯(nb) |
+|---------------- |:----------:|------------:|---------------:|
+| word  | Time: 02:23:36 Test Error: 0.65192 | Time: 00:31:22 Test Error: 0.49097 | - |
+| topic | Time: 02:18:51 Test Error: 0.65052 | - | - |
+| word2vec | Time: 00:15:04 Test Error: 0.16285 | Time: 00:47:43 Test Error: 0.21358 | - |
 
 #### 3 计算用户留存率示例: [UserRetention](/src/main/scala/org/apache/spark/examples/practice/sql/UserRetention.scala)
 
