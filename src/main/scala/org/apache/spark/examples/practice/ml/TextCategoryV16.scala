@@ -54,6 +54,12 @@ object TextCategoryV16 {
   private val PREDICTION = "prediction"
   private val PREDICTED_LABEL = "predictedLabel"
 
+  private def checkParams: Boolean = {
+    // w2v, topic 计算的结果, nb 是不识别的
+    if ((Params.commonVecSpace == "w2v" || Params.commonVecSpace == "topic") && Params.commonAlg == "nb") false
+    else true
+  }
+
   private def loadStopWords(stopwordFile: String): Array[String] = {
     val br: BufferedReader = Files.newBufferedReader(Paths.get(stopwordFile), StandardCharsets.UTF_8)
     val words = ArrayBuffer[String]()
@@ -131,12 +137,16 @@ object TextCategoryV16 {
         stages +=(tf,
           new IDF()
             .setInputCol(RAW_FEATURES)
+            .setOutputCol(FEATURES)
+          /*
+          new IDF()
+            .setInputCol(RAW_FEATURES)
             .setOutputCol(IDF_FEATURES),
           new ChiSqSelector()
             .setFeaturesCol(IDF_FEATURES)
             .setLabelCol(INDEXED_LABEL)
             .setOutputCol(FEATURES)
-            .setNumTopFeatures(Params.tfidfFeaturesSelect)
+            .setNumTopFeatures(Params.tfidfFeaturesSelect)*/
           )
       case "topic" =>
         stages +=(tf,
@@ -223,6 +233,11 @@ object TextCategoryV16 {
 
     // 加载配置
     println(s"params info: ${Params.toString}")
+
+    if (!checkParams) {
+      println("param is not ok")
+      System.exit(1)
+    }
 
     // 初始化 SparkContext
     val conf = new SparkConf().setAppName("TextCategoryV16")
