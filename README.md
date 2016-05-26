@@ -8,7 +8,13 @@ SparkDemo
 
 本文档也提供了一些实际的案例, 这些案例是对真实场景的抽象, 展示了一个实际项目开发需要考虑的问题.
 
-#### 关于 Scala 的文档，参见：[Scala 文档](/docs/README_SCALA.md)
-#### 关于 Java 的文档，参见：[Java 文档](/docs/README_JAVA.md)
-#### 关于 Python 的文档，参见：[Python 文档](/src/main/python/README.md)
-#### 关于 R 的文档，参见：[R 文档](/src/main/r/README.md)
+#### 关于 Scala 的文档，参见：[Scala 文档](/docs/README_SCALA.md) -- 推荐指数 ★★★★★★★★★★
+#### 关于 Python 的文档，参见：[Python 文档](/src/main/python/README.md) -- 推荐 ★★★★★★★★★
+#### 关于 Java 的文档，参见：[Java 文档](/docs/README_JAVA.md) -- 推荐指数 ★★★★★
+#### 关于 R 的文档，参见：[R 文档](/src/main/r/README.md) -- 推荐指数 ★★★★★
+
+示例的推荐指数:
+
+| Scala | Python | Java |  | R |
+|---------------- |:----------:|------------:|---------------:|
+| ★★★★★ ★★★★★  | ★★★★★ ★★★★ | ★★★★★ | ★★★★ |

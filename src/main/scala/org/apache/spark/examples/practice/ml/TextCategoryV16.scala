@@ -20,7 +20,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
 import org.apache.log4j.Logger
-import org.apache.spark.ml.classification.{LogisticRegression, OneVsRest, RandomForestClassifier}
+import org.apache.spark.ml.classification.{LogisticRegression, NaiveBayes, OneVsRest, RandomForestClassifier}
 import org.apache.spark.ml.clustering.LDA
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.feature.{IndexToString, StringIndexer, _}
@@ -183,6 +183,11 @@ object TextCategoryV16 {
             .setFeaturesCol(FEATURES)
             .setClassifier(c)
       }
+      case "nb" =>
+        stages += new NaiveBayes()
+          .setLabelCol(INDEXED_LABEL)
+          .setFeaturesCol(FEATURES)
+          .setModelType("multinomial")
       case _ => {
         throw new Exception(s"alg not valid: ${Params.commonAlg}")
       }
