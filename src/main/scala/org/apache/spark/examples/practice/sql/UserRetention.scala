@@ -51,6 +51,9 @@ object UserRetention {
   private val GID = "gid"
   private val DATE = "date"
 
+  private val BASE_DAY = "baseDay"
+  private val STAT_DAY = "statDay"
+
   /**
     *
     * @param args
@@ -119,6 +122,9 @@ object UserRetention {
     // 需要动态 partition
     hiveSqlContext.setConf("hive.exec.dynamic.partition", "true")
     hiveSqlContext.setConf("hive.exec.dynamic.partition.mode", "nonstrict")
+
+    // 做一个索引
+    MongoDBConnection.getInstance.collConn.createIndex(MongoDBObject(APPKEY -> true, BASE_DAY -> true, STAT_DAY -> true))
   }
 
   /**
@@ -180,8 +186,8 @@ object UserRetention {
             val bc = record.getAs[Long](1)
             val rc = record.getAs[Long](2)
 
-            val query = MongoDBObject(APPKEY -> appkey, "baseDay" -> baseDay, "statDay" -> statDay)
-            val obj = MongoDBObject(APPKEY -> appkey, "baseDay" -> baseDay, "statDay" -> statDay,
+            val query = MongoDBObject(APPKEY -> appkey, BASE_DAY -> baseDay, STAT_DAY -> statDay)
+            val obj = MongoDBObject(APPKEY -> appkey, BASE_DAY -> baseDay, STAT_DAY -> statDay,
               "bc" -> bc, "rc" -> rc, "ratio" -> rc * 1.0 / bc)
 
             connection.collConn.update(query, obj, upsert = true)

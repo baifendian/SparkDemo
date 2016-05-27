@@ -30,8 +30,6 @@ class MongoDBConnection(host: String, port: Int, db: String, collection: String)
 
   val dbConn = mongoClient(db)
   val collConn = dbConn(collection)
-
-  collConn.createIndex(MongoDBObject("appkey" -> true, "baseDay" -> true, "statDay" -> true))
 }
 
 object MongoDBConnection {
