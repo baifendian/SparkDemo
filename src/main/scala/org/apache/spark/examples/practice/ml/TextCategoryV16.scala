@@ -55,8 +55,8 @@ object TextCategoryV16 {
   private val PREDICTED_LABEL = "predictedLabel"
 
   private def checkParams: Boolean = {
-    // w2v, topic 计算的结果, nb 是不识别的
-    if ((Params.commonVecSpace == "w2v" || Params.commonVecSpace == "topic") && Params.commonAlg == "nb") false
+    // w2v 计算的结果, nb 是不识别的
+    if (Params.commonVecSpace == "w2v" && Params.commonAlg == "nb") false
     else true
   }
 
@@ -235,7 +235,7 @@ object TextCategoryV16 {
     println(s"params info: ${Params.toString}")
 
     if (!checkParams) {
-      println("param is not ok")
+      println("param is not ok.")
       System.exit(1)
     }
 
