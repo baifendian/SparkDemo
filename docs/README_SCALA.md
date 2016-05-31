@@ -776,7 +776,7 @@ Triangle Counting: 三角计算是非常有意思的，它是要解决这种问�
 代码提交方式如下:
 
 ```
-# 由于 checkpoint 的不稳定性, 可以在启动的时候删除相关的目录
+# 由于 checkpoint 可能由上一个应用写入了数据, 需要在启动的时候删除 checkpoint 目录
 [qifeng.dai@bgsbtsp0006-dqf sparkbook]$ hadoop fs -rmr checkpoint/Kafka2Hdfs
 
 [qifeng.dai@bgsbtsp0006-dqf sparkbook]$ spark-submit --class org.apache.spark.examples.practice.streaming.Kafka2Hdfs \
