@@ -15,30 +15,15 @@
   */
 package org.apache.spark.examples.practice.streaming
 
-import java.io.{File, FileInputStream}
-import java.text.SimpleDateFormat
-import java.util.{Date, Properties}
+import java.io.FileInputStream
+import java.util.Properties
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FSDataOutputStream, FileSystem, Path}
+import org.apache.log4j.Logger
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.log4j.Logger
-
-// 参数的 key 值
-object Params {
-  // kafka params
-  val ZK = "zookeeper"
-  val GROUP = "groupid"
-  val TOPICS = "topics"
-  val NUM_STREAMS = "num.streams"
-
-  // hdfs params
-  val HDFS_PATH = "hdfs.path"
-}
 
 // 配置文件的广播变量, 这里使用了单件模式, 为了避免 driver 挂掉
 object BroadConfig {
@@ -75,34 +60,16 @@ object Kafka2Hdfs {
     val ctx = new SparkContext(sparkConf)
     val ssc = new StreamingContext(ctx, Seconds(10))
 
-    // check point 特性不是很稳定, 慎用, driver 重启的时候会有问题!!!
-    HdfsConnection.removeCheckpoint("checkpoint/Kafka2Hdfs")
-
     // 设置 checkpoint
     ssc.checkpoint("checkpoint/Kafka2Hdfs")
 
-    ssc
-  }
-
-  def main(args: Array[String]) {
-    // 注意我们这里有个 checkpoint 的恢复机制, 应对 driver 的重启(从 metadata 恢复), 另外也可以应对有状态的操作(不过本示例没有)
-    val ssc = StreamingContext.getOrCreate("checkpoint/Kafka2Hdfs", functionToCreateContext _)
-    val ctx = ssc.sparkContext
-
-    // 创建 kafka stream
+    // 创建 kafka stream, 注意这段代码需要放在里面
     val topics = BroadConfig.getInstance(ctx).value.getProperty(Params.TOPICS)
     val zk = BroadConfig.getInstance(ctx).value.getProperty(Params.ZK)
     val group = BroadConfig.getInstance(ctx).value.getProperty(Params.GROUP)
     val numStreams = BroadConfig.getInstance(ctx).value.getProperty(Params.NUM_STREAMS) toInt
 
     logger.info(s"topics: $topics, zookeeper: $zk, group id: $group, num streams: $numStreams")
-
-    // 注意这里也没有设置 Parallelism, 这是因为 Direct Stream 方式有简单的并行性, 即 "many RDD partitions as there are Kafka partitions".
-    // 不过千万要注意, Direct Stream 还处于试验阶段, 慎用啊!!!
-    //    val topicsSet = topics.split(",").toSet
-    //    val kafkaParams = Map[String, String]("metadata.broker.list" -> brokers, "auto.offset.reset" -> "smallest")
-    //    val messages = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
-    //      ssc, kafkaParams, topicsSet)
 
     // 注意这里是 receiver 方式, 我们会创建多个 streams, 这样多个 executor 都会执行 receiver(input DStream)
     val kafkaStreams = (1 to numStreams).map { i => {
@@ -140,6 +107,13 @@ object Kafka2Hdfs {
           }
       }
     }
+
+    ssc
+  }
+
+  def main(args: Array[String]) {
+    // 注意我们这里有个 checkpoint 的恢复机制, 应对 driver 的重启(从 metadata 恢复), 另外也可以应对有状态的操作(不过本示例没有)
+    val ssc = StreamingContext.getOrCreate("checkpoint/Kafka2Hdfs", functionToCreateContext _)
 
     // Start the computation
     ssc.start()
