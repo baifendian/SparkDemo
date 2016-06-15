@@ -8,6 +8,12 @@ SparkDemo
 
 本文档也提供了一些实际的案例, 这些案例是对真实场景的抽象, 展示了一个实际项目开发需要考虑的问题.
 
+### 版本说明
+hadoop: 2.6.0
+spark: 1.6.1
+
+集群的搭建方式请大家参考官网的说明.
+
 #### 关于 Scala 的文档，参见：[Scala 文档](/docs/README_SCALA.md)
 #### 关于 Python 的文档，参见：[Python 文档](/src/main/python/README.md)
 #### 关于 Java 的文档，参见：[Java 文档](/docs/README_JAVA.md)
