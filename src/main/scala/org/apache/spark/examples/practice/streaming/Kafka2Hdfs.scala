@@ -95,7 +95,8 @@ object Kafka2Hdfs {
           val connection = HdfsConnection.getHdfsConnection(config)
           partitionOfRecords.foreach(
             record => {
-              connection.writeUTF(record)
+              // connection.writeUTF(record)
+              connection.write(record.getBytes("UTF-8"))
               connection.writeBytes("\n")
             }
           )
